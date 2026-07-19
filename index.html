@@ -42,11 +42,6 @@
       border: 1px solid rgba(241, 245, 249, 0.8);
       box-shadow: 0 4px 20px rgba(148, 163, 184, 0.06);
     }
-    
-    /* Smooth transitions for preview frame loading */
-    .fade-transition {
-      transition: opacity 0.4s cubic-bezier(0.25, 1, 0.5, 1), transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
-    }
   </style>
 </head>
 <body class="h-full flex overflow-hidden select-none bg-slate-50">
@@ -63,7 +58,9 @@
         <div class="inline-flex p-2 bg-indigo-50 text-indigo-600 rounded-lg">
           <i class="fa-solid fa-wand-magic-sparkles text-sm"></i>
         </div>
-        <span class="px-2 py-0.5 bg-slate-100 text-slate-600 text-[9px] font-bold rounded-full tracking-wider uppercase">Classroom Art</span>
+        <span id="cloud-status-badge" class="px-2 py-0.5 bg-slate-100 text-slate-500 text-[9px] font-bold rounded-full tracking-wider uppercase transition-all flex items-center gap-1">
+          <i class="fa-solid fa-cloud"></i> <span>연결 대기</span>
+        </span>
       </div>
       <h1 class="text-lg font-bold tracking-tight text-slate-900 leading-snug">
         우리 반 미디어 아트 전시관
@@ -73,7 +70,7 @@
           <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
           <span class="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span>
         </span>
-        실시간 자동 순환 감상 중
+        실시간 자동 순환 감상 중 (자동 저장됨)
       </p>
     </div>
 
@@ -96,14 +93,17 @@
     </div>
 
     <!-- Active Playlists Sidebar Content -->
-    <div class="p-4 shrink-0 border-b border-slate-50">
+    <div class="p-4 shrink-0 border-b border-slate-50 flex items-center justify-between">
       <h3 class="text-[10px] font-bold tracking-wider text-slate-400 uppercase flex items-center gap-1.5">
         <i class="fa-solid fa-images text-indigo-500/70"></i> 전시 중인 작품 목록
       </h3>
+      <button id="btn-clear-archive" class="text-[9px] font-semibold text-rose-500 hover:text-rose-700 transition-colors flex items-center gap-1" title="모든 전시 내역을 비우고 초기화합니다.">
+        <i class="fa-solid fa-trash-can text-[8px]"></i>전체 초기화
+      </button>
     </div>
     
     <!-- Dynamic Scrollable Playlist Container -->
-    <div class="flex-1 overflow-y-auto p-3 flex flex-col gap-1 bg-slate-50/10" id="playlist-container">
+    <div class="flex-1 overflow-y-auto p-3 flex flex-col gap-1.5 bg-slate-50/10" id="playlist-container">
       <!-- Loaded dynamically via JavaScript -->
     </div>
 
@@ -169,7 +169,7 @@
     
     <!-- Floating Minimal Info Badge (Placed gently in the corner) -->
     <div class="absolute bottom-6 left-6 glass-panel px-4 py-3 rounded-xl max-w-sm transform transition-all duration-500 translate-y-0 opacity-0 z-30" id="art-info-panel">
-      <span class="text-[9px] font-bold tracking-wider text-indigo-500 uppercase block mb-0.5">Interactive Canvas</span>
+      <span id="badge-source-type" class="text-[9px] font-bold tracking-wider text-indigo-500 uppercase block mb-0.5">Interactive Canvas</span>
       <h2 id="current-art-title" class="text-sm font-bold text-slate-800 art-title-font truncate">작품 로드 대기 중</h2>
       <p id="current-art-author" class="text-[10px] text-slate-400 mt-1 flex items-center gap-1">
         <i class="fa-solid fa-user text-slate-300"></i> 
@@ -194,7 +194,7 @@
         </div>
         <div>
           <h2 class="text-xs font-bold text-slate-900">우리 반 미디어 아트 미술실</h2>
-          <p class="text-[10px] text-slate-400 mt-0.5">웹 언어(HTML/JS)를 사용해 터치와 마우스에 유기적으로 상호작용하는 아트를 빌딩하고 공유하세요.</p>
+          <p class="text-[10px] text-slate-400 mt-0.5">웹 언어(HTML/JS)를 사용해 터치와 마우스에 반응하는 아름다운 미디어 아트를 빌딩하고 학급 친구들과 실시간으로 공유하세요.</p>
         </div>
       </div>
       <button id="btn-close-studio" class="text-slate-400 hover:text-slate-800 w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-50 transition-all">
@@ -227,7 +227,7 @@
           </div>
         </div>
         
-        <!-- Plain Simple Code Editor Area (Monolithic style but cleaner) -->
+        <!-- Plain Simple Code Editor Area -->
         <div class="flex-1 relative flex flex-col bg-slate-900">
           <textarea id="code-editor" class="flex-1 w-full bg-slate-900 p-4 text-[11px] text-slate-300 font-mono resize-none focus:outline-none focus:ring-0 leading-relaxed overflow-y-auto" spellcheck="false" placeholder="여기에 웹아트용 HTML/JS 코드를 작성하거나 파일을 업로드해 주세요."></textarea>
         </div>
@@ -245,19 +245,30 @@
         </div>
         
         <!-- Registration & Export Cards -->
-        <div class="bg-white border border-slate-100 rounded-xl p-4 shrink-0 flex flex-col gap-2.5 shadow-sm">
-          <div class="flex items-center gap-2 mb-1">
+        <div class="bg-white border border-slate-100 rounded-xl p-4 shrink-0 flex flex-col gap-3 shadow-sm">
+          <div class="flex items-center gap-2">
             <div class="w-6 h-6 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-600 text-xs">
               <i class="fa-solid fa-share-nodes"></i>
             </div>
             <div>
-              <h3 class="text-[11px] font-bold text-slate-800">클라우드 전시 등록 및 공유</h3>
-              <p class="text-[9px] text-slate-400">데이터가 주소창에 저장되므로 서버 등록 없이 무제한으로 사용 가능한 단독 웹 링크를 발급합니다.</p>
+              <h3 class="text-[11px] font-bold text-slate-800">실시간 학급 클라우드 저장 및 공유</h3>
+              <p class="text-[9px] text-slate-400">클라우드 전시관에 등록하면 우리 반 모든 친구들의 화면에 즉시 작품이 실시간 추가됩니다!</p>
             </div>
           </div>
           
-          <button id="btn-generate-share" class="w-full py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-[11px] font-bold rounded-lg shadow-sm transition-all flex items-center justify-center gap-1.5 active:scale-95">
-            <i class="fa-solid fa-link text-[10px]"></i> 공유할 수 있는 URL 만들기
+          <!-- Cloud Upload Primary Button -->
+          <button id="btn-cloud-upload" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white text-[11px] font-bold rounded-lg shadow-sm transition-all flex items-center justify-center gap-1.5 active:scale-95">
+            <i class="fa-solid fa-cloud-arrow-up text-[10px]"></i> 실시간 학급 공용 전시관에 등록하기
+          </button>
+
+          <div class="relative flex py-1 items-center">
+              <div class="flex-grow border-t border-slate-100"></div>
+              <span class="flex-shrink mx-4 text-[9px] text-slate-300 font-semibold uppercase">or Offline options</span>
+              <div class="flex-grow border-t border-slate-100"></div>
+          </div>
+
+          <button id="btn-generate-share" class="w-full py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-bold rounded-lg transition-all flex items-center justify-center gap-1.5 active:scale-95">
+            <i class="fa-solid fa-link text-[10px]"></i> 프라이빗 공유용 URL 주소 만들기
           </button>
 
           <!-- Sharing Trigger Expansion Block -->
@@ -268,9 +279,6 @@
                 복사
               </button>
             </div>
-            <button id="btn-add-to-gallery" class="w-full py-2 border border-emerald-500/30 hover:border-emerald-500/60 text-emerald-600 hover:bg-emerald-50/30 rounded-lg text-[11px] font-bold transition-all flex items-center justify-center gap-1.5 shadow-sm">
-              <i class="fa-solid fa-plus text-[10px]"></i> 현재 학급 전시 목록에 가입 (임시)
-            </button>
           </div>
         </div>
       </div>
@@ -280,7 +288,85 @@
   <!-- Central Dynamic Toast Notice Area -->
   <div id="toast-container" class="fixed top-6 left-1/2 transform -translate-x-1/2 z-[100] flex flex-col gap-2 pointer-events-none"></div>
 
-  <script>
+  <!-- Custom Confirmation Modal (Bypassing Window.Confirm) -->
+  <div id="confirm-modal" class="fixed inset-0 bg-slate-900/30 backdrop-blur-sm z-[110] hidden items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-xl border border-slate-100 flex flex-col gap-4">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-full bg-rose-50 flex items-center justify-center text-rose-500 shrink-0">
+          <i class="fa-solid fa-triangle-exclamation"></i>
+        </div>
+        <div>
+          <h3 id="confirm-title" class="text-xs font-bold text-slate-900">정말 진행하시겠습니까?</h3>
+          <p id="confirm-message" class="text-[11px] text-slate-400 mt-1">이 작업은 되돌릴 수 없으니 주의해 주세요.</p>
+        </div>
+      </div>
+      <div class="flex gap-2 justify-end">
+        <button id="btn-confirm-cancel" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg text-xs font-bold transition-all">취소</button>
+        <button id="btn-confirm-ok" class="px-4 py-2 bg-rose-600 hover:bg-rose-500 text-white rounded-lg text-xs font-bold transition-all">확인</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getFirestore, collection, doc, addDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+    // Global variables & Firebase Config
+    const appId = typeof __app_id !== 'undefined' ? __app_id : 'classroom-media-art-gallery-v2';
+    const rawConfig = typeof __firebase_config !== 'undefined' ? __firebase_config : null;
+    let firebaseConfig = null;
+    if (rawConfig) {
+      try {
+        firebaseConfig = JSON.parse(rawConfig);
+      } catch(e) {
+        console.error("Firebase Configuration Error:", e);
+      }
+    }
+
+    let auth = null;
+    let db = null;
+    let isCloudConnected = false;
+    let unsubscribeFirestore = null;
+
+    // Custom non-blocking Confirm Dialog
+    function showConfirm(title, message) {
+      return new Promise((resolve) => {
+        const modal = document.getElementById('confirm-modal');
+        const titleEl = document.getElementById('confirm-title');
+        const messageEl = document.getElementById('confirm-message');
+        const btnCancel = document.getElementById('btn-confirm-cancel');
+        const btnOk = document.getElementById('btn-confirm-ok');
+
+        titleEl.textContent = title;
+        messageEl.textContent = message;
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+
+        const onCancel = () => {
+          modal.classList.add('hidden');
+          modal.classList.remove('flex');
+          cleanup();
+          resolve(false);
+        };
+
+        const onOk = () => {
+          modal.classList.add('hidden');
+          modal.classList.remove('flex');
+          cleanup();
+          resolve(true);
+        };
+
+        const cleanup = () => {
+          btnCancel.removeEventListener('click', onCancel);
+          btnOk.removeEventListener('click', onOk);
+        };
+
+        btnCancel.addEventListener('click', onCancel);
+        btnOk.addEventListener('click', onOk);
+      });
+    }
+
     // Robust LZString fallback to prevent script failures if CDN is blocked/delayed
     if (typeof LZString === 'undefined') {
       window.LZString = {
@@ -299,12 +385,13 @@
       };
     }
 
-    // Pure, clean introductory screen without complicated UI or dummy scripts
+    // High quality initial landing info page (Guides users to register code)
     const defaultArtworks = [
       {
         id: 'guide-page',
-        title: '미디어 아트 작품을 등록해 주세요!',
+        title: '미디어 아트 작품을 기다리고 있습니다!',
         author: '우리 반 미술 교실',
+        sourceType: 'system',
         code: `<!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -358,9 +445,9 @@
 <body>
   <div class="wrapper">
     <div class="emoji">🎨</div>
-    <h1>전시 준비 완료</h1>
-    <p>아래 <b>우리 반 미술실 (새 작품 등록)</b> 단추를 누른 뒤 작성한 코드 또는 모바일 등에서 전송받은 .html 파일을 업로드하여 감상 전용 인터랙티브 미술 전시관을 완성하세요.</p>
-    <div class="action-badge">코드를 기다리고 있습니다</div>
+    <h1>실시간 클라우드 전시 준비 완료</h1>
+    <p>아래 <b>우리 반 미술실 (새 작품 등록)</b> 단추를 누른 뒤 작성한 코드 또는 태블릿에서 가져온 .html 파일을 업로드하여 실시간 감상 전용 인터랙티브 미술 전시관을 완성하세요.</p>
+    <div class="action-badge">우리 반 클라우드 동기화 대기 중</div>
   </div>
 </body>
 </html>`
@@ -368,7 +455,6 @@
     ];
 
     // High quality, minimal interactive visual boilerplate - gentle water ripple
-    // Note: Escaped internal closing script tags to prevent HTML parsing errors on parent page.
     const baseBoilerplate = `<!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -493,9 +579,11 @@
     const artInfoPanel = document.getElementById('art-info-panel');
     const titleEl = document.getElementById('current-art-title');
     const authorEl = document.getElementById('current-art-author');
+    const badgeSourceType = document.getElementById('badge-source-type');
     const progressBar = document.getElementById('exhibition-progress');
     const selectSpeed = document.getElementById('select-speed');
     const timerDisplay = document.getElementById('timer-display');
+    const cloudStatusBadge = document.getElementById('cloud-status-badge');
     
     const btnPrev = document.getElementById('btn-prev');
     const btnNext = document.getElementById('btn-next');
@@ -507,6 +595,7 @@
     const btnMobileToggle = document.getElementById('btn-mobile-toggle');
     const btnProjectionMode = document.getElementById('btn-projection-mode');
     const btnExitProjection = document.getElementById('btn-exit-projection');
+    const btnClearArchive = document.getElementById('btn-clear-archive');
     
     const studioModal = document.getElementById('studio-modal');
     const btnOpenStudio = document.getElementById('btn-open-studio');
@@ -521,20 +610,20 @@
     const shareResult = document.getElementById('share-result');
     const shareUrlInput = document.getElementById('share-url-input');
     const btnCopyLink = document.getElementById('btn-copy-link');
-    const btnAddToGallery = document.getElementById('btn-add-to-gallery');
+    const btnCloudUpload = document.getElementById('btn-cloud-upload');
 
     const touchLeft = document.getElementById('touch-area-left');
     const touchRight = document.getElementById('touch-area-right');
 
-    // UI Toast System
     function showToast(title, message, iconType = 'info') {
       const container = document.getElementById('toast-container');
       const toast = document.createElement('div');
-      toast.className = `bg-white/95 border border-slate-100 text-slate-800 px-4 py-2.5 rounded-lg shadow-md flex items-center gap-3 transform -translate-y-2 opacity-0 transition-all duration-200 backdrop-blur-md`;
+      toast.className = `bg-white/95 border border-slate-100 text-slate-800 px-4 py-2.5 rounded-lg shadow-md flex items-center gap-3 transform -translate-y-2 opacity-0 transition-all duration-200 backdrop-blur-md z-[120] pointer-events-none`;
       
       let icon = `<i class="fa-solid fa-circle-check text-indigo-500 text-xs"></i>`;
       if (iconType === 'error') icon = `<i class="fa-solid fa-circle-exclamation text-rose-500 text-xs"></i>`;
       if (iconType === 'success') icon = `<i class="fa-solid fa-wand-magic-sparkles text-emerald-500 text-xs"></i>`;
+      if (iconType === 'cloud') icon = `<i class="fa-solid fa-cloud text-indigo-500 text-xs"></i>`;
 
       toast.innerHTML = `${icon}<div><strong class="block text-[10px] font-bold text-slate-900">${title}</strong><span class="text-[9px] text-slate-400">${message}</span></div>`;
       container.appendChild(toast);
@@ -545,35 +634,128 @@
       setTimeout(() => {
         toast.classList.add('-translate-y-2', 'opacity-0');
         setTimeout(() => toast.remove(), 250);
-      }, 2500);
+      }, 3000);
     }
 
     function renderPlaylistUI() {
       playlistContainer.innerHTML = '';
       playlist.forEach((art, index) => {
         const isActive = index === currentIndex;
-        const item = document.createElement('button');
-        item.className = `w-full text-left px-3.5 py-2.5 rounded-lg transition-all border flex flex-col gap-0.5 ${
+        const isGuide = art.id === 'guide-page';
+        const isCloudArt = art.sourceType === 'cloud';
+        
+        const item = document.createElement('div');
+        item.className = `w-full flex items-center justify-between group rounded-lg transition-all border p-1 ${
           isActive 
             ? 'bg-white border-slate-100 shadow-sm' 
             : 'bg-transparent border-transparent hover:bg-slate-50'
         }`;
         
-        item.innerHTML = `
-          <div class="flex items-center justify-between w-full">
+        // Active visual area
+        const contentBtn = document.createElement('button');
+        contentBtn.className = "flex-1 text-left px-2.5 py-1.5 flex flex-col gap-0.5 overflow-hidden focus:outline-none";
+        contentBtn.innerHTML = `
+          <div class="flex items-center gap-1.5 w-full">
             <span class="text-[11px] font-bold truncate ${isActive ? 'text-indigo-600' : 'text-slate-700'}">${art.title}</span>
-            ${isActive ? '<span class="w-1 h-1 rounded-full bg-indigo-500"></span>' : ''}
+            ${isActive ? '<span class="w-1 h-1 shrink-0 rounded-full bg-indigo-500"></span>' : ''}
           </div>
-          <span class="text-[9px] truncate ${isActive ? 'text-indigo-500/80' : 'text-slate-400'}"><i class="fa-solid fa-circle-user mr-1 text-[8px]"></i>${art.author}</span>
+          <div class="flex items-center gap-1 text-[9px] ${isActive ? 'text-indigo-500/80' : 'text-slate-400'}">
+            <i class="fa-solid fa-circle-user text-[8px]"></i>
+            <span class="truncate">${art.author}</span>
+            ${isCloudArt ? '<span class="text-[8px] bg-indigo-50 text-indigo-500 px-1 rounded flex items-center gap-0.5"><i class="fa-solid fa-cloud text-[7px]"></i>클라우드</span>' : ''}
+          </div>
         `;
         
-        item.onclick = () => {
+        contentBtn.onclick = () => {
           stopAutoPlay();
           loadArt(index);
           closeMobileSidebar();
         };
+        item.appendChild(contentBtn);
+
+        // Individual Delete Button (Exclude standard guide)
+        if (!isGuide) {
+          const deleteBtn = document.createElement('button');
+          deleteBtn.className = "w-7 h-7 mr-1 rounded-md text-slate-300 hover:text-rose-500 hover:bg-rose-50 flex items-center justify-center transition-all opacity-40 group-hover:opacity-100 focus:opacity-100";
+          deleteBtn.title = "이 작품을 갤러리에서 삭제합니다.";
+          deleteBtn.innerHTML = `<i class="fa-regular fa-trash-can text-[10px]"></i>`;
+          
+          deleteBtn.onclick = async (e) => {
+            e.stopPropagation();
+            const confirmed = await showConfirm(
+              '작품을 영구 삭제하시겠습니까?', 
+              isCloudArt ? '클라우드 학급 공용 전시 서버에서도 함께 즉시 삭제됩니다.' : '로컬 임시 브라우저 백업에서 영구히 삭제됩니다.'
+            );
+            if (confirmed) {
+              removeArt(art, index);
+            }
+          };
+          item.appendChild(deleteBtn);
+        }
+        
         playlistContainer.appendChild(item);
       });
+    }
+
+    // Delete single artwork
+    async function removeArt(art, index) {
+      if (art.sourceType === 'cloud' && isCloudConnected && db) {
+        try {
+          const path = `/artifacts/${appId}/public/data/artworks`;
+          await deleteDoc(doc(db, path, art.id));
+          showToast('클라우드 작품 제거', `'${art.title}'이 학급 공유 전시판에서 삭제되었습니다.`, 'success');
+        } catch(err) {
+          console.error("Failed to delete from Firestore:", err);
+          showToast('작업 실패', '클라우드 연결 상태를 확인해 주세요.', 'error');
+        }
+      } else {
+        playlist.splice(index, 1);
+        if (playlist.length === 0) {
+          playlist = [...defaultArtworks];
+          currentIndex = 0;
+        } else {
+          if (currentIndex >= playlist.length) {
+            currentIndex = playlist.length - 1;
+          }
+        }
+        saveLocalBackup();
+        renderPlaylistUI();
+        loadArt(currentIndex);
+        
+        if (playlist.length > 1 && autoPlay) {
+          startTimer();
+        } else {
+          stopAutoPlay();
+        }
+        showToast('로컬 삭제 완료', `'${art.title}' 작품이 목록에서 안전하게 제외되었습니다.`);
+      }
+    }
+
+    // Local Storage backup for non-cloud session continuity
+    function saveLocalBackup() {
+      const nonCloudArtworks = playlist.filter(art => art.id !== 'guide-page' && art.sourceType !== 'cloud');
+      if (nonCloudArtworks.length > 0) {
+        localStorage.setItem('our_classroom_media_arts_offline', JSON.stringify(nonCloudArtworks));
+      } else {
+        localStorage.removeItem('our_classroom_media_arts_offline');
+      }
+    }
+
+    function loadLocalBackup() {
+      const stored = localStorage.getItem('our_classroom_media_arts_offline');
+      if (stored) {
+        try {
+          const parsed = JSON.parse(stored);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            // Keep local offline artwork before cloud subscription kicks in
+            playlist = parsed;
+            return true;
+          }
+        } catch(e) {
+          console.error("Local backup parse failed", e);
+        }
+      }
+      return false;
     }
 
     function loadArt(index) {
@@ -603,6 +785,14 @@
         titleEl.textContent = art.title;
         authorEl.innerHTML = `<i class="fa-solid fa-user text-indigo-400 text-[8px]"></i> <span>제작: ${art.author}</span>`;
         
+        if (art.sourceType === 'cloud') {
+          badgeSourceType.innerHTML = `<span class="inline-flex items-center gap-1 text-[8px] bg-indigo-50 text-indigo-600 px-1.5 py-0.5 rounded-full font-bold uppercase"><i class="fa-solid fa-cloud text-[7px]"></i> 실시간 클라우드 작품</span>`;
+        } else if (art.id === 'guide-page') {
+          badgeSourceType.innerHTML = `<span class="inline-flex items-center gap-1 text-[8px] bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded-full font-bold uppercase">시스템 튜토리얼</span>`;
+        } else {
+          badgeSourceType.innerHTML = `<span class="inline-flex items-center gap-1 text-[8px] bg-amber-50 text-amber-600 px-1.5 py-0.5 rounded-full font-bold uppercase"><i class="fa-solid fa-hard-drive text-[7px]"></i> 로컬 임시 보관</span>`;
+        }
+        
         setTimeout(() => {
           artInfoPanel.classList.remove('translate-y-2', 'opacity-0');
           artInfoPanel.classList.add('translate-y-0', 'opacity-100');
@@ -610,7 +800,7 @@
 
       }, 400);
 
-      // Clean timeline update
+      // Clean timeline progress bar update
       progressBar.classList.remove('animate-progress');
       void progressBar.offsetWidth; // Force Reflow
       
@@ -673,7 +863,23 @@
     touchLeft.addEventListener('click', () => { stopAutoPlay(); loadArt((currentIndex - 1 + playlist.length) % playlist.length); });
     touchRight.addEventListener('click', () => { stopAutoPlay(); loadArt((currentIndex + 1) % playlist.length); });
 
-    // Projection Mode (Minimal View)
+    // Wipe out archive
+    btnClearArchive.addEventListener('click', async () => {
+      const confirmWipe = await showConfirm(
+        "모든 전시 목록을 리셋하시겠습니까?", 
+        "로컬에 백업된 파일 리스트가 초기화되며, 클라우드 연결 시에는 가이드 페이지만 우선 표시됩니다."
+      );
+      if (confirmWipe) {
+        localStorage.removeItem('our_classroom_media_arts_offline');
+        playlist = [...defaultArtworks];
+        currentIndex = 0;
+        stopAutoPlay();
+        loadArt(0);
+        showToast('아카이브 리셋', '학급 오프라인 갤러리가 안전하게 비워졌습니다.', 'success');
+      }
+    });
+
+    // Projection Mode (Minimal View for projector)
     function toggleProjectionMode(active) {
       isProjectionMode = active;
       if (isProjectionMode) {
@@ -734,7 +940,7 @@
     function loadTemplateIntoEditor() {
       codeEditor.value = baseBoilerplate;
       inputTitle.value = "우리 반 미디어 아트 " + (playlist.length === 1 && playlist[0].id === 'guide-page' ? 1 : playlist.length + 1);
-      inputAuthor.value = "학생 작가";
+      inputAuthor.value = "작가 학생";
       renderStudioPreview();
     }
 
@@ -775,6 +981,7 @@
       reader.readAsText(file);
     }
 
+    // Static Base64/Compressed Private URL Generator
     btnGenerateShare.addEventListener('click', () => {
       const code = codeEditor.value.trim();
       const title = inputTitle.value.trim() || '무제';
@@ -790,7 +997,7 @@
         shareUrlInput.value = finalUrl;
         shareResult.classList.remove('hidden');
         shareResult.classList.add('flex');
-        showToast('주소 변환 성공', '공유를 통해 감상 가능한 복사용 코드가 구성되었습니다.', 'success');
+        showToast('주소 변환 성공', '개인 전송용 정적 링크가 구성되었습니다.', 'success');
       } catch(e) {
         showToast('크기 오류', '용량이 너무 큰 소스 코드입니다.', 'error');
       }
@@ -801,36 +1008,182 @@
       document.execCommand('copy');
       btnCopyLink.textContent = '완료!';
       btnCopyLink.classList.replace('bg-slate-900', 'bg-emerald-600');
-      showToast('복사 완료', '클립보드에 미술관 감상용 주소가 등록되었습니다.', 'success');
+      showToast('복사 완료', '클립보드에 프라이빗 감상용 주소가 등록되었습니다.', 'success');
       setTimeout(() => {
         btnCopyLink.textContent = '복사';
         btnCopyLink.classList.replace('bg-emerald-600', 'bg-slate-900');
       }, 1500);
     });
 
-    btnAddToGallery.addEventListener('click', () => {
-      const newArt = {
-        id: 'art-custom-' + Date.now(),
-        title: inputTitle.value.trim() || '우리 반 미디어 아트',
-        author: inputAuthor.value.trim() || '작가 학생',
-        code: codeEditor.value
-      };
-      
-      if (playlist.length === 1 && playlist[0].id === 'guide-page') {
-        playlist = [newArt];
-      } else {
-        playlist.unshift(newArt);
+    // Cloud upload logic using Firestore (Rules compliant & authenticated first)
+    btnCloudUpload.addEventListener('click', async () => {
+      const title = inputTitle.value.trim() || '무제 미디어 아트';
+      const author = inputAuthor.value.trim() || '학생 작가';
+      const code = codeEditor.value.trim();
+
+      if (!code) {
+        return showToast('등록 오류', '제출할 아트 소스코드가 비어있습니다.', 'error');
       }
-      
-      closeStudio();
-      loadArt(0);
-      if (playlist.length > 1) {
-        startTimer();
+
+      if (!isCloudConnected || !db) {
+        // If Firestore is offline, save to local backup as fallback
+        const offlineArt = {
+          id: 'art-custom-' + Date.now(),
+          title: title,
+          author: author,
+          code: code,
+          sourceType: 'offline',
+          createdAt: Date.now()
+        };
+        
+        if (playlist.length === 1 && playlist[0].id === 'guide-page') {
+          playlist = [offlineArt];
+        } else {
+          playlist.unshift(offlineArt);
+        }
+        
+        saveLocalBackup();
+        closeStudio();
+        loadArt(0);
+        showToast('로컬 임시 등록', '인터넷 연결이 불안정하여 로컬에 임시 저장되었습니다.', 'success');
+        return;
       }
-      showToast('작품 가입 성공', `'${newArt.title}'이 임시 전시 테이블에 올라갔습니다.`, 'success');
+
+      try {
+        btnCloudUpload.disabled = true;
+        btnCloudUpload.innerHTML = `<i class="fa-solid fa-circle-notch animate-spin"></i> 클라우드 전송 중...`;
+
+        // RULE 1 Strict path matching pattern: /artifacts/{appId}/public/data/{collectionName}
+        const artworksCollectionPath = `/artifacts/${appId}/public/data/artworks`;
+        const targetCollectionRef = collection(db, artworksCollectionPath);
+
+        const artworkPayload = {
+          title: title,
+          author: author,
+          code: code,
+          sourceType: 'cloud',
+          createdAt: Date.now()
+        };
+
+        await addDoc(targetCollectionRef, artworkPayload);
+        
+        showToast('실시간 등록 완료!', `'${title}'이 전교 학급 전시관 클라우드에 공유되었습니다!`, 'cloud');
+        closeStudio();
+        
+      } catch(err) {
+        console.error("Firestore transmission failure:", err);
+        showToast('클라우드 오류', '작품 업로드 중 문제가 발생했습니다.', 'error');
+      } finally {
+        btnCloudUpload.disabled = false;
+        btnCloudUpload.innerHTML = `<i class="fa-solid fa-cloud-arrow-up text-[10px]"></i> 실시간 학급 공용 전시관에 등록하기`;
+      }
     });
 
+    // Setup real-time firestore sync
+    function setupFirestoreSubscription() {
+      if (!db) return;
+
+      // RULE 1 Strict path matching pattern: /artifacts/{appId}/public/data/{collectionName}
+      const artworksCollectionPath = `/artifacts/${appId}/public/data/artworks`;
+      const cloudRef = collection(db, artworksCollectionPath);
+
+      // RULE 2: No complex query. Pull simply and order in client memory
+      unsubscribeFirestore = onSnapshot(cloudRef, (snapshot) => {
+        let cloudArtworks = [];
+        snapshot.forEach((doc) => {
+          cloudArtworks.push({
+            id: doc.id,
+            ...doc.data()
+          });
+        });
+
+        // In-memory sort by createdAt descending (Newest first)
+        cloudArtworks.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+
+        // Incorporate local offline creations if present
+        const localBackup = [];
+        const stored = localStorage.getItem('our_classroom_media_arts_offline');
+        if (stored) {
+          try { localBackup.push(...JSON.parse(stored)); } catch(e){}
+        }
+
+        const consolidatedList = [...localBackup, ...cloudArtworks];
+
+        if (consolidatedList.length === 0) {
+          playlist = [...defaultArtworks];
+        } else {
+          playlist = consolidatedList;
+        }
+
+        renderPlaylistUI();
+        
+        // Keep active index robust
+        if (currentIndex >= playlist.length) {
+          currentIndex = 0;
+        }
+        loadArt(currentIndex);
+        if (playlist.length > 1 && autoPlay) {
+          startTimer();
+        }
+
+        // Toggle state indicators
+        cloudStatusBadge.className = "px-2 py-0.5 bg-emerald-50 text-emerald-600 text-[9px] font-bold rounded-full tracking-wider uppercase transition-all flex items-center gap-1";
+        cloudStatusBadge.innerHTML = `<i class="fa-solid fa-wifi"></i> <span>실시간 클라우드 연결됨</span>`;
+        isCloudConnected = true;
+
+      }, (error) => {
+        console.error("Firestore listener broke:", error);
+        cloudStatusBadge.className = "px-2 py-0.5 bg-amber-50 text-amber-600 text-[9px] font-bold rounded-full tracking-wider uppercase transition-all flex items-center gap-1";
+        cloudStatusBadge.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> <span>로컬 오프라인 감상 중</span>`;
+        isCloudConnected = false;
+      });
+    }
+
+    // Auth validation before queries (RULE 3)
+    async function initCloudEngine() {
+      if (!firebaseConfig) {
+        console.warn("No firebaseConfig supplied. Defaulting to local standalone offline mode.");
+        cloudStatusBadge.className = "px-2 py-0.5 bg-slate-100 text-slate-500 text-[9px] font-bold rounded-full tracking-wider uppercase transition-all flex items-center gap-1";
+        cloudStatusBadge.innerHTML = `<i class="fa-solid fa-cloud-slash"></i> <span>로컬 오프라인 전용</span>`;
+        loadLocalBackup();
+        loadArt(0);
+        return;
+      }
+
+      try {
+        const app = initializeApp(firebaseConfig);
+        auth = getAuth(app);
+        db = getFirestore(app);
+
+        // RULE 3 Priority token check and sign-in await
+        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+          await signInWithCustomToken(auth, __initial_auth_token);
+        } else {
+          await signInAnonymously(auth);
+        }
+
+        // Setup real-time cloud streams once authenticated
+        setupFirestoreSubscription();
+
+      } catch(err) {
+        console.error("Cloud engine initiation failed:", err);
+        cloudStatusBadge.className = "px-2 py-0.5 bg-amber-50 text-amber-600 text-[9px] font-bold rounded-full tracking-wider uppercase transition-all flex items-center gap-1";
+        cloudStatusBadge.innerHTML = `<i class="fa-solid fa-cloud-slash"></i> <span>연결 오류 - 오프라인 전환</span>`;
+        loadLocalBackup();
+        loadArt(0);
+      }
+    }
+
+    // App Initialization Orchestrator
     window.onload = () => {
+      // 1. First trigger offline restoration if available so UI doesn't look blank
+      const hasLocalData = loadLocalBackup();
+      loadArt(0);
+
+      // 2. Start syncing online Cloud components
+      initCloudEngine();
+
+      // 3. See if there's a custom query parameter shared via legacy URL
       const urlParams = new URLSearchParams(window.location.search);
       const artParam = urlParams.get('art');
 
@@ -840,22 +1193,35 @@
           const parsed = JSON.parse(decompressed);
           
           if (parsed && parsed.c) {
-            const sharedArt = {
-              id: 'art-shared',
-              title: parsed.t || '공유 수신 작품',
+            const incomingArt = {
+              id: 'art-imported-' + Date.now(),
+              title: parsed.t || '가져온 수신 작품',
               author: parsed.a || '학생 작가',
-              code: parsed.c
+              code: parsed.c,
+              sourceType: 'offline',
+              createdAt: Date.now()
             };
-            playlist = [sharedArt];
-            showToast('공유 예술 접수', `'${sharedArt.author}' 님의 미디어 아트를 전시합니다.`, 'success');
+
+            const exists = playlist.some(art => art.title === incomingArt.title && art.author === incomingArt.author);
+            if (!exists) {
+              if (playlist.length === 1 && playlist[0].id === 'guide-page') {
+                playlist = [incomingArt];
+              } else {
+                playlist.unshift(incomingArt);
+              }
+              saveLocalBackup();
+              showToast('공유 작품 로드', `'${incomingArt.title}'이 임시 보관함에 등록되었습니다.`, 'success');
+            }
           }
         } catch (err) {
-          console.error(err);
-          showToast('불러오기 오류', '손상되었거나 빈 코드 수신 데이터입니다.', 'error');
+          console.error("Failed to decode imported artwork parameters", err);
+          showToast('불러오기 오류', '수신 데이터가 손상되었거나 불완전한 소스입니다.', 'error');
+        } finally {
+          const cleanUri = window.location.protocol + "//" + window.location.host + window.location.pathname;
+          window.history.replaceState({ path: cleanUri }, '', cleanUri);
         }
       }
 
-      loadArt(0);
       if (playlist.length > 1) {
         startTimer();
       }
