@@ -1,938 +1,832 @@
 <!DOCTYPE html>
-<html lang="ko" class="h-full">
+<html lang="ko">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>우리 반 인터랙티브 미디어 아트 전시관</title>
-  
-  <!-- Tailwind CSS & FontAwesome Icons for clean aesthetics -->
+  <title>우리 반 미디어 아트 전시관</title>
+  <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome Icons for clean UI symbols -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Google Fonts Inter for readability -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Firebase Compatibility SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
   
-  <!-- LZ-String Library for URL-based serverless sharing -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.4.4/lz-string.min.js"></script>
-  
-  <!-- Premium Inter & Nanum Gothic Font Configuration -->
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Nanum+Gothic:wght@400;700;800&display=swap');
-    html, body {
-      height: 100vh;
-      height: -webkit-fill-available;
-      margin: 0;
-      padding: 0;
-      overflow: hidden;
-      font-family: 'Inter', 'Nanum Gothic', -apple-system, sans-serif;
-      background-color: #fafbfe;
+    body {
+      font-family: 'Inter', sans-serif;
     }
-    
-    /* Smooth transition for loading overlay */
-    .fade-enter { opacity: 0; }
-    .fade-enter-active { opacity: 1; transition: opacity 400ms ease-in-out; }
-    
-    /* Elegant custom scrollbar */
+    /* Hide scrollbars for slick application feeling */
     ::-webkit-scrollbar {
       width: 6px;
       height: 6px;
     }
     ::-webkit-scrollbar-track {
-      background: transparent;
+      background: #f1f5f9;
     }
     ::-webkit-scrollbar-thumb {
-      background: #e2e8f0;
+      background: #cbd5e1;
       border-radius: 9999px;
     }
     ::-webkit-scrollbar-thumb:hover {
-      background: #cbd5e1;
+      background: #94a3b8;
     }
   </style>
 </head>
-<body class="flex flex-col text-slate-800">
+<body class="bg-slate-50 text-slate-800 w-screen h-screen overflow-hidden flex flex-col select-none">
 
-  <!-- Top Minimalist Progress Bar for Slide Transition -->
-  <div class="fixed top-0 left-0 w-full h-[3px] bg-slate-100 z-50">
-    <div id="progress-bar" class="h-full bg-gradient-to-r from-indigo-400 to-violet-400 w-0 transition-all duration-100 ease-linear"></div>
-  </div>
-
-  <!-- Main Viewport Shell -->
-  <div class="flex-1 flex flex-col md:flex-row relative overflow-hidden h-[calc(100vh-3px)] mt-[3px]">
+  <div class="flex-1 flex w-full h-full relative overflow-hidden">
     
-    <!-- Left Controller Panel (Collapsible) -->
-    <aside id="sidebar-panel" class="w-full md:w-[360px] bg-white/95 backdrop-blur-md border-r border-slate-100 flex flex-col shrink-0 z-40 transition-transform duration-300 relative shadow-sm h-full">
-      
-      <!-- Studio Header Branding -->
-      <div class="p-6 border-b border-slate-50 flex items-center justify-between">
-        <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-50 to-violet-50 flex items-center justify-center text-indigo-500 shadow-sm shadow-indigo-100/50">
-            <i class="fa-solid fa-wand-magic-sparkles text-lg animate-pulse"></i>
+    <!-- LEFT SIDEBAR: Controls and artwork listings (White Theme) -->
+    <aside id="sidebar-panel" class="w-80 h-full bg-white border-r border-slate-200 flex flex-col transition-transform duration-300 z-20 shrink-0 relative">
+      <!-- Sidebar Header -->
+      <div class="p-5 border-b border-slate-100 flex items-center justify-between">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-indigo-500 to-purple-500 flex items-center justify-center shadow-lg shadow-indigo-500/20">
+            <i class="fa-solid fa-wand-magic-sparkles text-white text-sm"></i>
           </div>
           <div>
-            <h1 class="text-sm font-bold bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">우리 반 미디어 아트 전시관</h1>
-            <p class="text-[10px] text-indigo-500 font-semibold tracking-wider mt-0.5"><i class="fa-solid fa-circle text-[6px] mr-1 align-middle"></i>실시간 공용 전시관 감상 중</p>
+            <h1 class="font-bold text-sm leading-tight text-slate-800">우리 반 전시관</h1>
+            <p class="text-[10px] text-indigo-600 font-semibold tracking-wider uppercase">Classroom Media Art</p>
           </div>
         </div>
-        
-        <button id="btn-toggle-sidebar" class="md:hidden text-slate-400 hover:text-slate-600 p-1 rounded-lg hover:bg-slate-50 transition-colors">
-          <i class="fa-solid fa-chevron-left text-sm"></i>
-        </button>
       </div>
 
-      <!-- Quick Play Controller Actions -->
-      <div class="p-5 border-b border-slate-50 bg-slate-50/40">
-        <div class="flex items-center justify-between mb-4">
-          <div class="flex items-center gap-2">
-            <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">전시 시간 제어</span>
-            <select id="select-duration" class="bg-white border border-slate-200 text-[11px] font-bold text-slate-600 px-2 py-1 rounded-md focus:border-indigo-300 focus:outline-none transition-colors">
-              <option value="5000">5초 간격</option>
-              <option value="10000" selected>10초 간격</option>
-              <option value="20000">20초 간격</option>
-              <option value="30000">30초 간격</option>
-            </select>
-          </div>
-          
-          <!-- Slide Navigation Controls -->
+      <!-- Controls Section -->
+      <div class="p-4 bg-slate-50/50 border-b border-slate-100 space-y-3.5">
+        <div class="flex items-center justify-between">
+          <span class="text-xs text-slate-500 font-medium">재생 제어</span>
           <div class="flex items-center gap-1.5">
-            <button id="btn-prev" class="w-8 h-8 rounded-lg bg-white border border-slate-200 hover:border-slate-300 text-slate-600 hover:text-slate-900 shadow-sm transition-all flex items-center justify-center active:scale-95" title="이전 작품">
-              <i class="fa-solid fa-chevron-left text-xs"></i>
+            <button id="btn-prev" class="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 flex items-center justify-center transition-all text-slate-600" title="이전 작품">
+              <i class="fa-solid fa-backward text-xs"></i>
             </button>
-            <button id="btn-play-pause" class="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-500 to-violet-500 text-white shadow-md shadow-indigo-100 hover:shadow-indigo-200 transition-all flex items-center justify-center active:scale-95" title="재생/일시정지">
-              <i id="play-pause-icon" class="fa-solid fa-pause text-xs"></i>
+            <button id="btn-play-pause" class="w-10 h-10 rounded-lg bg-indigo-600 hover:bg-indigo-500 flex items-center justify-center transition-all text-white shadow-md shadow-indigo-600/10" title="재생/일시정지">
+              <i id="play-pause-icon" class="fa-solid fa-pause text-sm"></i>
             </button>
-            <button id="btn-next" class="w-8 h-8 rounded-lg bg-white border border-slate-200 hover:border-slate-300 text-slate-600 hover:text-slate-900 shadow-sm transition-all flex items-center justify-center active:scale-95" title="다음 작품">
-              <i class="fa-solid fa-chevron-right text-xs"></i>
+            <button id="btn-next" class="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 flex items-center justify-center transition-all text-slate-600" title="다음 작품">
+              <i class="fa-solid fa-forward text-xs"></i>
             </button>
           </div>
         </div>
 
-        <!-- Primary Action Trigger for Uploading Work (Clean Branding) -->
-        <button id="btn-open-studio" class="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-indigo-500 to-violet-500 hover:from-indigo-600 hover:to-violet-600 text-white text-xs font-bold shadow-lg shadow-indigo-100 hover:shadow-indigo-200 hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2">
-          <i class="fa-solid fa-cloud-arrow-up text-sm"></i> 새 작품 파일(.html) 올리기
+        <div class="flex items-center justify-between text-xs">
+          <span class="text-slate-500">자동 전환 시간</span>
+          <select id="select-duration" class="bg-white border border-slate-200 rounded px-2 py-1 text-slate-700 outline-none focus:border-indigo-500 text-xs cursor-pointer">
+            <option value="5000">5초</option>
+            <option value="10000" selected>10초</option>
+            <option value="20000">20초</option>
+            <option value="30000">30초</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Artwork List Container -->
+      <div class="flex-1 overflow-y-auto p-4 space-y-2.5">
+        <h2 class="text-xs font-bold text-slate-400 tracking-wider uppercase mb-1 flex items-center gap-1.5">
+          <i class="fa-solid fa-images text-[10px]"></i>상영 목록
+        </h2>
+        <div id="playlist-container" class="space-y-2">
+          <!-- Dynamically populated -->
+        </div>
+      </div>
+
+      <!-- Action Buttons Area -->
+      <div class="p-4 border-t border-slate-100 bg-slate-50/50 space-y-2">
+        <button id="btn-open-studio" class="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/10 hover:shadow-indigo-600/20 transition-all duration-200 transform hover:-translate-y-0.5">
+          <i class="fa-solid fa-cloud-arrow-up"></i>새 작품 파일(.html) 올리기
+        </button>
+        <button id="btn-projector-mode" class="w-full py-2 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs flex items-center justify-center gap-2 transition-all">
+          <i class="fa-solid fa-display"></i>프로젝터 전시 모드
+        </button>
+        <button id="btn-open-settings" class="w-full py-2 px-4 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-slate-500 hover:text-slate-700 font-medium text-[11px] flex items-center justify-center gap-1.5 transition-all">
+          <i class="fa-solid fa-gear"></i>전시관 설정 및 백업
         </button>
       </div>
-
-      <!-- Curated Art List Section -->
-      <div class="flex-1 overflow-y-auto px-5 py-4">
-        <div class="flex items-center justify-between mb-3 px-1">
-          <h2 class="text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
-            <i class="fa-solid fa-images text-[10px]"></i> 전시 작품 목록 (<span id="artwork-count">0</span>)
-          </h2>
-          <button id="btn-clear-all" class="text-[10px] text-slate-400 hover:text-rose-500 font-bold transition-colors flex items-center gap-1" title="모든 전시 비우기">
-            <i class="fa-solid fa-trash-can text-[9px]"></i> 전체 비우기
-          </button>
-        </div>
-        
-        <!-- Interactive List Inner Wrapper -->
-        <div id="playlist-container" class="space-y-2.5">
-          <!-- Dynamic Content Rendered by JS -->
-        </div>
-      </div>
-
-      <!-- Sidebar Control Footer -->
-      <footer class="p-4 border-t border-slate-50 flex flex-col gap-2">
-        <div class="flex gap-2">
-          <button id="btn-open-settings" class="flex-1 py-2 px-3 border border-slate-100 hover:border-slate-200 rounded-lg text-slate-500 hover:text-slate-800 text-[10px] font-bold transition-all flex items-center justify-center gap-1.5">
-            <i class="fa-solid fa-sliders text-[9px]"></i> 전시관 설정 및 백업
-          </button>
-          <button id="btn-projector-mode" class="flex-1 py-2 px-3 bg-slate-900 text-white hover:bg-black rounded-lg text-[10px] font-bold transition-all flex items-center justify-center gap-1.5 shadow-sm" title="대형 전시 모드 실행">
-            <i class="fa-solid fa-expand text-[9px]"></i> 프로젝터 전시 모드
-          </button>
-        </div>
-        <p class="text-[9px] text-slate-300 text-center mt-1">우리 반 인터랙티브 아트 전시관 &copy; 2026</p>
-      </footer>
     </aside>
 
-    <!-- Right Interactive Presentation Viewport -->
-    <main class="flex-1 relative bg-slate-950 flex flex-col overflow-hidden h-full">
-      
-      <!-- Minimalist Dynamic Floating Tag Overlay -->
-      <div id="art-info-panel" class="absolute bottom-6 left-6 z-30 pointer-events-auto max-w-[calc(100%-3rem)] transition-all duration-300 translate-y-0">
-        <div class="px-5 py-4 bg-white/90 backdrop-blur-lg rounded-2xl shadow-xl shadow-slate-950/20 border border-white/20 flex flex-col gap-1">
-          <span class="text-[9px] font-bold tracking-widest text-indigo-500 uppercase">전시 작품</span>
-          <h1 id="current-art-title" class="text-sm font-extrabold text-slate-900 tracking-tight truncate">미디어아트 전시 준비 중</h1>
-          <p id="current-art-author" class="text-[10px] font-bold text-slate-400 mt-0.5">🧑‍🎨 이름</p>
-        </div>
-      </div>
-
-      <!-- Left/Right Edge Quick Navigation Zones for Touch Screens -->
-      <div class="absolute inset-y-0 left-0 w-16 z-20 cursor-w-resize flex items-center justify-start pl-4 group" id="touch-nav-prev">
-        <div class="w-10 h-10 rounded-full bg-black/10 hover:bg-black/30 text-white/50 hover:text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all shadow-md">
-          <i class="fa-solid fa-chevron-left text-xs"></i>
-        </div>
-      </div>
-      <div class="absolute inset-y-0 right-0 w-16 z-20 cursor-e-resize flex items-center justify-end pr-4 group" id="touch-nav-next">
-        <div class="w-10 h-10 rounded-full bg-black/10 hover:bg-black/30 text-white/50 hover:text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all shadow-md">
-          <i class="fa-solid fa-chevron-right text-xs"></i>
-        </div>
-      </div>
-
-      <!-- Floating Button to Exit Projector Mode -->
-      <button id="btn-exit-projector" class="fixed top-6 right-6 z-50 bg-white/90 hover:bg-white text-slate-800 text-xs font-bold px-4 py-2.5 rounded-xl shadow-lg border border-slate-100 transition-all hidden items-center gap-2 transform hover:scale-105 active:scale-95">
-        <i class="fa-solid fa-compress"></i> 프로젝터 전시 모드 종료
+    <!-- RIGHT VIEWPORT: Running artwork and overlays (Light theme container) -->
+    <main class="flex-1 h-full relative bg-slate-100 flex flex-col">
+      <!-- Top Floating Bar (Shows when projection mode is active so user can exit) -->
+      <button id="btn-exit-projector" class="absolute top-4 right-4 px-4 py-2 bg-white/95 backdrop-blur border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-xl text-xs font-bold items-center gap-2 shadow-2xl transition-all duration-300 z-30 hidden">
+        <i class="fa-solid fa-compress"></i>전시 모드 종료하기
       </button>
 
-      <!-- Active Floating Drawer Trigger for Mobile Devices -->
-      <button id="btn-mobile-trigger" class="md:hidden fixed bottom-6 right-6 z-40 w-12 h-12 bg-white text-slate-800 rounded-full shadow-2xl border border-slate-100 flex items-center justify-center transition-transform hover:scale-110 active:scale-90">
-        <i class="fa-solid fa-bars text-sm"></i>
-      </button>
+      <!-- Main Artwork Canvas/IFrame View -->
+      <div class="flex-1 w-full h-full relative overflow-hidden">
+        <iframe id="art-iframe" class="w-full h-full border-none bg-slate-100 transition-opacity duration-500" sandbox="allow-scripts allow-same-origin allow-modals"></iframe>
+        
+        <!-- Elegant White Blank/Empty Screen Overlay -->
+        <div id="empty-state" class="absolute inset-0 bg-slate-50 flex flex-col items-center justify-center p-6 text-center z-10">
+          <div class="w-20 h-20 rounded-full bg-white border border-slate-200 flex items-center justify-center mb-6 shadow-sm">
+            <i class="fa-solid fa-film text-3xl text-indigo-500 animate-pulse"></i>
+          </div>
+          <h3 class="text-xl font-bold text-slate-800 mb-2">우리 반 미디어 아트 전시관</h3>
+          <p class="text-sm text-slate-500 max-w-sm leading-relaxed mb-6">
+            현재 상영 대기 중입니다.<br>
+            마우스로 <span class="text-indigo-600 font-bold">.html 파일</span>을 이 화면에 그냥 던져 놓으시거나 왼쪽 올리기 버튼을 통해 등록해 주세요!
+          </p>
+          <div class="px-4 py-2 rounded-lg bg-indigo-50 border border-indigo-100 text-[11px] text-indigo-600 font-semibold flex items-center gap-2">
+            <i class="fa-solid fa-arrows-to-eye"></i>화면 전체가 드롭존입니다
+          </div>
+        </div>
 
-      <!-- Sandbox Frame Canvas Holder (No error, robust rendering) -->
-      <div id="gallery-loader" class="absolute inset-0 bg-slate-950 flex flex-col items-center justify-center gap-3 transition-opacity duration-300 z-10 pointer-events-none">
-        <div class="w-12 h-12 border-4 border-indigo-400/20 border-t-indigo-500 rounded-full animate-spin"></div>
-        <p id="loading-title" class="text-xs font-semibold text-slate-500 tracking-wide mt-2">미술 작품 로딩 중...</p>
+        <!-- Float Info Panel in Lower-Left Corner (White glassmorphism) -->
+        <div id="art-info-panel" class="absolute bottom-6 left-6 max-w-sm bg-white/95 backdrop-blur-md border border-slate-200/80 rounded-2xl p-4 shadow-2xl transition-all duration-300 z-10 pointer-events-none opacity-0 translate-y-2">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-500 to-purple-500 flex items-center justify-center text-white font-bold shrink-0 shadow-md">
+              <i class="fa-solid fa-signature"></i>
+            </div>
+            <div class="min-w-0">
+              <h4 id="art-info-title" class="text-sm font-bold text-slate-800 truncate">작품 제목</h4>
+              <p id="art-info-creator" class="text-xs text-slate-500 truncate">작가 이름</p>
+            </div>
+          </div>
+        </div>
       </div>
-      
-      <!-- Core iframe executing sandbox graphics safely -->
-      <iframe id="exhibition-iframe" class="w-full h-full border-none m-0 p-0 block bg-slate-950" sandbox="allow-scripts allow-popups" srcdoc=""></iframe>
+
+      <!-- Mobile Menu Trigger -->
+      <button id="btn-mobile-trigger" class="md:hidden absolute bottom-4 right-4 w-11 h-11 rounded-full bg-indigo-600 hover:bg-indigo-500 text-white flex items-center justify-center shadow-xl z-30 transition-transform">
+        <i class="fa-solid fa-bars"></i>
+      </button>
     </main>
   </div>
 
-  <!-- Classroom Art Uploader: Upload & Share Center Modal -->
-  <div id="studio-modal" class="fixed inset-0 bg-white z-50 hidden flex-col transition-all duration-300">
-    
-    <!-- Modal Minimalist Header -->
-    <header class="border-b border-slate-100 px-6 py-4 flex items-center justify-between shrink-0 bg-white">
+  <!-- STUDIO MODAL: Drop/Create/Share Artworks (3:7 ratio Split screen layout) -->
+  <div id="studio-modal" class="fixed inset-0 bg-slate-50/98 z-40 hidden flex flex-col">
+    <!-- Header with Go-Back Button -->
+    <header class="h-16 border-b border-slate-200 px-6 flex items-center justify-between shrink-0 bg-white">
       <div class="flex items-center gap-3">
-        <div class="w-8 h-8 rounded-lg bg-indigo-50/80 flex items-center justify-center text-indigo-600 text-xs">
-          <i class="fa-solid fa-cloud-arrow-up"></i>
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-white">
+          <i class="fa-solid fa-chalkboard-user"></i>
         </div>
         <div>
-          <h2 class="text-xs font-bold text-slate-900">작품 파일(.html) 올리기 및 공유</h2>
-          <p class="text-[10px] text-slate-400 mt-0.5">웹 브라우저에서 바로 동작하는 index.html 파일을 업로드하여 전시관에 동시 등록하고 전용 공유 링크를 쉽게 생성하세요.</p>
+          <h2 class="font-bold text-sm text-slate-800">우리 반 미디어 아트 스튜디오</h2>
+          <p class="text-[10px] text-slate-500">새로운 미디어 아트를 올리고 실시간 결과물을 검증해 봅니다.</p>
         </div>
       </div>
-      <button id="btn-close-studio" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition-all flex items-center gap-2 shadow-sm active:scale-95">
-        <i class="fa-solid fa-arrow-left"></i> 전시관으로 돌아가기
+      <button id="btn-close-studio" class="px-4 py-2 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold text-xs flex items-center gap-2 transition-all shadow-sm border border-indigo-100">
+        <i class="fa-solid fa-arrow-left"></i>← 전시관으로 돌아가기
       </button>
     </header>
 
-    <!-- Creator Workspace Panel: HORIZONTAL SIDE-BY-SIDE VIEW FOR DESKTOP & TABLETS (3:7 Ratio Adjusted) -->
-    <div class="flex-1 grid grid-cols-1 md:grid-cols-10 overflow-hidden p-4 gap-4 bg-slate-50/50">
+    <!-- Studio Content Body (3:7 layout) -->
+    <main class="flex-1 grid grid-cols-1 md:grid-cols-10 gap-6 p-6 overflow-hidden bg-slate-50">
       
-      <!-- Left: File Upload Interface (Main Focus - 30% Width) -->
-      <div class="md:col-span-3 flex flex-col border border-slate-100 rounded-xl overflow-hidden bg-white shadow-sm p-5 justify-between overflow-y-auto">
-        
-        <div class="space-y-5">
-          <!-- Step 1: Big Drag & Drop Zone -->
-          <div>
-            <span class="text-[10px] font-bold text-indigo-500 uppercase tracking-wider block mb-2">1단계: HTML 파일 가져오기</span>
-            <div id="drop-zone" class="border-2 border-dashed border-slate-200 hover:border-indigo-400 rounded-xl p-6 flex flex-col items-center justify-center text-center cursor-pointer transition-colors bg-slate-50/50 min-h-[140px] relative overflow-hidden">
-              <input type="file" id="file-input" accept=".html,.htm" class="absolute inset-0 opacity-0 cursor-pointer">
-              <i class="fa-solid fa-file-code text-indigo-400 text-2xl mb-2"></i>
-              <p class="text-[11px] font-bold text-slate-700">여기에 index.html 파일을 놓으세요</p>
-              <p class="text-[9px] text-slate-400 mt-1">클릭하여 파일을 직접 선택할 수도 있습니다.</p>
+      <!-- LEFT 30% (3 columns): Form Controls -->
+      <section class="md:col-span-3 flex flex-col gap-4 overflow-y-auto pr-2">
+        <div class="bg-white border border-slate-200 rounded-2xl p-4 space-y-4 shadow-sm">
+          <h3 class="text-xs font-bold text-indigo-600 tracking-wider uppercase flex items-center gap-1.5">
+            <i class="fa-solid fa-cloud-arrow-up"></i>파일 제출 가이드
+          </h3>
+
+          <!-- Big Dropzone area -->
+          <div id="studio-dropzone" class="border-2 border-dashed border-slate-300 hover:border-indigo-500 bg-slate-50/50 rounded-xl p-5 text-center cursor-pointer transition-all flex flex-col items-center justify-center group">
+            <input type="file" id="studio-file-input" accept=".html" class="hidden">
+            <div class="w-11 h-11 rounded-full bg-slate-100 group-hover:bg-indigo-50 group-hover:text-indigo-600 flex items-center justify-center text-slate-400 transition-colors mb-3">
+              <i class="fa-solid fa-file-code text-lg"></i>
             </div>
+            <p class="text-xs font-bold text-slate-700 mb-1">여기에 파일 떨어뜨리기</p>
+            <p class="text-[10px] text-slate-400">또는 마우스로 클릭해서 찾기</p>
+            <p class="text-[9px] text-slate-500 mt-2 bg-slate-100 px-2 py-0.5 rounded-md font-medium">*.html 파일만 지원</p>
           </div>
 
-          <!-- Step 2: Meta Info Input fields (Stacked Vertically for 30% constraint) -->
+          <!-- Metadata form -->
           <div class="space-y-3">
-            <span class="text-[10px] font-bold text-indigo-500 uppercase tracking-wider block">2단계: 작품 정보 입력</span>
-            <div class="space-y-2">
-              <div>
-                <label class="block text-[9px] font-bold text-slate-400 mb-1">미디어아트 제목</label>
-                <input type="text" id="input-art-title" placeholder="미디어아트 제목" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-[11px] font-semibold text-slate-700 focus:border-indigo-400 focus:outline-none transition-colors">
-              </div>
-              <div>
-                <label class="block text-[9px] font-bold text-slate-400 mb-1">이름</label>
-                <input type="text" id="input-art-author" placeholder="이름" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-[11px] font-semibold text-slate-700 focus:border-indigo-400 focus:outline-none transition-colors">
-              </div>
+            <div>
+              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">작품 제목</label>
+              <input id="studio-title" type="text" class="w-full bg-slate-50 border border-slate-200 focus:border-indigo-500 focus:outline-none rounded-lg px-3 py-2 text-xs text-slate-800" placeholder="예: 우주의 조화">
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">작가 이름 (반/이름)</label>
+              <input id="studio-creator" type="text" class="w-full bg-slate-50 border border-slate-200 focus:border-indigo-500 focus:outline-none rounded-lg px-3 py-2 text-xs text-slate-800" placeholder="예: 3반 김민지">
             </div>
           </div>
         </div>
 
-        <!-- Step 3: Advanced Editor option -->
-        <div class="border-t border-slate-100 pt-3 mt-4">
-          <details class="group">
-            <summary class="text-[10px] font-bold text-slate-400 cursor-pointer hover:text-slate-600 flex items-center gap-1 focus:outline-none select-none">
-              <i class="fa-solid fa-chevron-right text-[8px] transition-transform group-open:rotate-90"></i> 고급 설정 (HTML 소스 코드)
-            </summary>
-            <div class="mt-2 h-[100px] rounded-lg overflow-hidden border border-slate-200 bg-slate-900 relative">
-              <textarea id="code-editor" class="w-full h-full bg-slate-900 p-2 text-[10px] text-slate-300 font-mono resize-none focus:outline-none leading-relaxed overflow-y-auto" spellcheck="false"></textarea>
-            </div>
-          </details>
-        </div>
-      </div>
-
-      <!-- Right: Realtime Studio Preview Panel & Share Center (70% Width) -->
-      <div class="md:col-span-7 flex flex-col gap-4 overflow-hidden h-full">
-        
-        <!-- Dynamic Studio Preview Mirror -->
-        <div class="flex-1 border border-slate-100 rounded-xl overflow-hidden bg-slate-50 relative min-h-[220px] shadow-sm">
-          <div class="absolute top-2.5 left-2.5 z-10 px-2.5 py-1 bg-white/90 backdrop-blur-sm border border-slate-100 rounded-md shadow-sm">
-            <span class="text-[9px] font-bold text-slate-500 flex items-center gap-1">
-              <i class="fa-solid fa-display text-[8px] text-indigo-500"></i> 실시간 미리보기 화면
-            </span>
-          </div>
-          <iframe id="studio-preview-iframe" class="w-full h-full border-none bg-slate-950" sandbox="allow-scripts" srcdoc=""></iframe>
+        <!-- Submit & Cloud Save buttons -->
+        <div class="space-y-2">
+          <button id="btn-save-local" class="w-full py-2.5 rounded-xl bg-white hover:bg-slate-100 text-slate-700 font-bold text-xs flex items-center justify-center gap-2 border border-slate-200 shadow-sm transition-all">
+            <i class="fa-solid fa-folder-plus text-slate-400"></i>내 전시 컴퓨터 보관함에 등록
+          </button>
+          <button id="btn-save-cloud" class="w-full py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/10 transition-all">
+            <i class="fa-solid fa-share-nodes"></i>실시간 학급 공용 전시판에 올리기
+          </button>
         </div>
 
-        <!-- Share Actions & Registration Board Card -->
-        <div class="p-4 bg-white border border-slate-100 rounded-xl shadow-sm flex flex-col gap-3 shrink-0">
-          <div class="flex justify-between items-center">
-            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">3단계: 학급 공유 및 전시관 등록</span>
-            <span class="text-[10px] text-indigo-500 font-semibold flex items-center gap-1">
-              <i class="fa-solid fa-globe text-[9px]"></i> 서버 없는 즉시 공유 모드
-            </span>
-          </div>
+        <div class="rounded-xl bg-white border border-slate-200 p-3 text-[10px] text-slate-500 leading-relaxed shadow-sm">
+          <i class="fa-solid fa-circle-info text-indigo-500 mr-1"></i>
+          학급 공용 클라우드를 올바르게 연결했다면 다른 단말기에서도 공유가 즉시 동기화됩니다!
+        </div>
+      </section>
 
-          <div class="flex gap-2">
-            <!-- Save Local and Instant Append Button -->
-            <button id="btn-register-local" class="flex-1 py-3 px-4 bg-slate-900 hover:bg-black text-white text-xs font-bold rounded-xl transition-all shadow-md shadow-slate-950/10 flex items-center justify-center gap-1.5 active:scale-95">
-              <i class="fa-solid fa-circle-check text-xs text-indigo-400"></i> 내 전시 컴퓨터 보관함에 등록
-            </button>
-            
-            <!-- Cloud Upload Button -->
-            <button id="btn-register-cloud" class="flex-1 py-3 px-4 bg-gradient-to-r from-indigo-500 to-violet-500 hover:from-indigo-600 hover:to-violet-600 text-white text-xs font-bold rounded-xl transition-all shadow-md shadow-indigo-100 flex items-center justify-center gap-1.5 active:scale-95">
-              <i class="fa-solid fa-cloud text-xs"></i> 학급 실시간 공용 전시판에 올리기
-            </button>
+      <!-- RIGHT 70% (7 columns): Preview Display Canvas -->
+      <section class="md:col-span-7 bg-white border border-slate-200 rounded-2xl overflow-hidden flex flex-col relative shadow-sm">
+        <div class="h-10 px-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between shrink-0">
+          <div class="flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+            <span class="text-xs text-slate-600 font-semibold">실시간 결과물 검증 캔버스</span>
           </div>
-
-          <!-- Generated Link Row -->
-          <div class="flex gap-2 items-center">
-            <input type="text" id="output-share-url" readonly placeholder="🔗 파일을 올리고 업로드를 마치면 주소가 여기에 생성됩니다." class="flex-1 bg-slate-50 border border-slate-100 rounded-lg px-3 py-2.5 text-[10px] text-slate-500 focus:outline-none">
-            <button id="btn-copy-url" class="py-2.5 px-4 bg-white border border-slate-200 hover:border-slate-300 text-[11px] font-bold text-slate-700 rounded-lg transition-all shrink-0 active:scale-95">
-              주소 복사
-            </button>
+          <span class="text-[10px] text-slate-400 font-mono">live-canvas.html</span>
+        </div>
+        <div class="flex-1 w-full bg-black relative">
+          <iframe id="studio-preview-iframe" class="w-full h-full border-none bg-black" sandbox="allow-scripts allow-same-origin allow-modals"></iframe>
+          <div id="studio-preview-placeholder" class="absolute inset-0 bg-slate-100/95 flex flex-col items-center justify-center text-center p-6 z-10">
+            <i class="fa-solid fa-play-css text-3xl text-indigo-500/50 mb-3 animate-pulse"></i>
+            <p class="text-xs text-slate-700 font-semibold">왼쪽 드롭존에 파일을 등록하면,</p>
+            <p class="text-[10px] text-slate-400">여기에 실시간 작동 모습이 나타납니다.</p>
           </div>
         </div>
+      </section>
 
-      </div>
-    </div>
+    </main>
   </div>
 
-  <!-- Configuration & Cloud Setup Modal -->
-  <div id="settings-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
-    <div class="bg-white w-full max-w-lg rounded-2xl shadow-2xl border border-slate-100 overflow-hidden transform scale-95 transition-all">
-      <header class="p-5 border-b border-slate-50 flex items-center justify-between">
-        <h3 class="text-xs font-bold text-slate-800 flex items-center gap-1.5"><i class="fa-solid fa-sliders text-indigo-500"></i> 미디어 아트 전시관 설정</h3>
-        <button id="btn-close-settings" class="text-slate-400 hover:text-slate-600 p-1"><i class="fa-solid fa-xmark"></i></button>
+  <!-- SETTINGS MODAL: Configure Firebase connection and general backups (White Style) -->
+  <div id="settings-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white border border-slate-200 rounded-2xl max-w-lg w-full overflow-hidden shadow-2xl flex flex-col">
+      <header class="p-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+        <div class="flex items-center gap-2 text-slate-800 font-bold text-sm">
+          <i class="fa-solid fa-gear text-indigo-500"></i>전시관 설정 및 백업
+        </div>
+        <button id="btn-close-settings" class="w-8 h-8 rounded-lg hover:bg-slate-100 flex items-center justify-center text-slate-400 hover:text-slate-600 transition-colors">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
       </header>
-
-      <div class="p-6 space-y-5 max-h-[70vh] overflow-y-auto">
-        
-        <!-- Cloud Storage Config Panel -->
-        <div class="space-y-2">
-          <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wide">학급 실시간 공용 클라우드 연결 (Firebase)</label>
-          <div class="p-4 bg-slate-50 rounded-xl space-y-3 border border-slate-100">
-            <p class="text-[10px] text-slate-400 leading-relaxed">무료 구글 파이어베이스(Firebase Firestore) 계정의 앱 설정 객체(JSON 문자열)를 그대로 입력하시면 학급 공유 클라우드 저장소가 즉시 영구 활성화됩니다.</p>
-            <textarea id="input-firebase-config" placeholder='{"apiKey": "AIzaSy...", "authDomain": "...", ...}' class="w-full h-24 bg-white border border-slate-200 rounded-lg p-3 text-[10px] font-mono focus:border-indigo-400 focus:outline-none" spellcheck="false"></textarea>
-            <div class="flex gap-2">
-              <button id="btn-save-firebase" class="flex-1 py-2 px-3 bg-indigo-500 hover:bg-indigo-600 text-white text-[10px] font-bold rounded-lg transition-colors">클라우드 연결 설정 저장</button>
-              <button id="btn-reset-firebase" class="py-2 px-3 bg-white border border-slate-200 hover:border-slate-300 text-slate-500 text-[10px] font-bold rounded-lg transition-colors">해제</button>
-            </div>
-          </div>
+      <div class="p-5 space-y-4 text-xs">
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">학급 실시간 공용 클라우드 연결 (Firebase)</label>
+          <p class="text-[10px] text-slate-400 mb-2 leading-relaxed">
+            Firebase 콘솔의 웹 SDK 설정 코드 블록(<code class="text-indigo-600">firebaseConfig</code>) 전체를 아래에 복사해 붙여넣으세요. 스마트 엔진이 괄호 안의 데이터만 자동으로 추출해 냅니다.
+          </p>
+          <textarea id="firebase-config-input" class="w-full h-40 bg-slate-50 text-slate-700 font-mono text-[10px] p-3 rounded-lg border border-slate-200 focus:outline-none focus:border-indigo-500" placeholder="const firebaseConfig = {&#10;  apiKey: '...',&#10;  authDomain: '...',&#10;  projectId: '...'&#10;};"></textarea>
         </div>
 
-        <!-- Local Backup JSON Management -->
-        <div class="space-y-2">
-          <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wide">수동 데이터 백업 및 복구</label>
-          <div class="grid grid-cols-2 gap-3">
-            <div class="p-3 border border-dashed border-slate-200 rounded-xl flex flex-col gap-2 items-center text-center justify-between">
-              <i class="fa-solid fa-cloud-arrow-down text-indigo-400 text-lg"></i>
-              <div>
-                <h4 class="text-[10px] font-bold text-slate-700">전시회 파일 내보내기</h4>
-                <p class="text-[9px] text-slate-400 mt-0.5">현재 등록된 모든 작품을 백업 파일(.json)로 PC에 안전하게 받아둡니다.</p>
-              </div>
-              <button id="btn-export-backup" class="w-full py-1.5 bg-slate-50 hover:bg-indigo-50 hover:text-indigo-600 text-slate-600 text-[10px] font-bold rounded-lg border border-slate-100 transition-colors">다운로드</button>
-            </div>
-
-            <div class="p-3 border border-dashed border-slate-200 rounded-xl flex flex-col gap-2 items-center text-center justify-between relative overflow-hidden">
-              <i class="fa-solid fa-cloud-arrow-up text-violet-400 text-lg"></i>
-              <div>
-                <h4 class="text-[10px] font-bold text-slate-700">백업 가져오기</h4>
-                <p class="text-[9px] text-slate-400 mt-0.5">전에 저장해 둔 백업 파일을 가져와 1초 만에 그대로 전시관을 복원합니다.</p>
-              </div>
-              <label class="w-full py-1.5 bg-slate-50 hover:bg-violet-50 hover:text-violet-600 text-slate-600 text-[10px] font-bold rounded-lg border border-slate-100 transition-colors text-center cursor-pointer">
-                파일 불러오기
-                <input type="file" id="input-import-backup" accept=".json" class="hidden">
-              </label>
-            </div>
+        <div class="flex justify-between items-center gap-4 border-t border-slate-200 pt-3">
+          <button id="btn-clear-local" class="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 rounded-lg font-bold text-[10px] transition-all">
+            <i class="fa-solid fa-trash-can mr-1"></i>기기 보관함 전체 삭제
+          </button>
+          <div class="flex gap-2">
+            <button id="btn-save-settings" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-lg transition-all">
+              클라우드 연결 설정 저장
+            </button>
           </div>
         </div>
-
       </div>
     </div>
   </div>
 
-  <!-- Fully Custom Clean Alert Modal -->
-  <div id="alert-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[100] hidden items-center justify-center p-4">
-    <div class="bg-white max-w-sm w-full rounded-2xl shadow-2xl p-6 border border-slate-100 text-center space-y-4 transform scale-95 transition-all">
-      <div id="alert-icon-box" class="w-12 h-12 rounded-full mx-auto flex items-center justify-center text-lg">
-        <!-- Dynamic Icon -->
-      </div>
-      <div class="space-y-1">
-        <h4 id="alert-title-text" class="text-xs font-bold text-slate-800">알림 메세지</h4>
-        <p id="alert-body-text" class="text-[10px] text-slate-400 leading-relaxed">여기에 알림의 상세한 정보가 표기됩니다.</p>
-      </div>
-      <div class="flex gap-2">
-        <button id="alert-btn-cancel" class="flex-1 py-2 px-3 border border-slate-100 text-slate-500 text-[10px] font-bold rounded-lg hover:bg-slate-50 transition-colors hidden">취소</button>
-        <button id="alert-btn-confirm" class="flex-1 py-2 px-3 bg-indigo-500 hover:bg-indigo-600 text-white text-[10px] font-bold rounded-lg shadow-md transition-colors">확인</button>
-      </div>
+  <!-- DRAG OVERLAY: Full-screen dropzone visual aid (Light overlay) -->
+  <div id="drag-overlay" class="fixed inset-0 bg-indigo-50/90 backdrop-blur-sm border-4 border-dashed border-indigo-400 flex flex-col items-center justify-center z-50 hidden pointer-events-none transition-all">
+    <div class="w-16 h-16 rounded-full bg-indigo-600 flex items-center justify-center text-white mb-4 animate-bounce">
+      <i class="fa-solid fa-cloud-arrow-up text-2xl"></i>
     </div>
+    <h3 class="text-lg font-bold text-indigo-700 mb-1">작품 파일 투척 감지!</h3>
+    <p class="text-xs text-indigo-500">마우스를 놓으면 즉각 해당 미디어 아트 등록 과정으로 이동합니다.</p>
   </div>
+
+  <!-- TOAST NOTIFICATION CONTAINER -->
+  <div id="toast-container" class="fixed top-5 left-1/2 -translate-x-1/2 z-50 flex flex-col gap-2 pointer-events-none"></div>
 
   <script>
-    
-    // Core Starter Art Template (Escaped safely to avoid rendering breakdown)
-    const baseBoilerplate = `<!DOCTYPE html>
-<html lang="ko">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <style>
-    body, html { margin: 0; padding: 0; overflow: hidden; background: #05050a; width: 100%; height: 100%; }
-    canvas { display: block; width: 100%; height: 100%; }
-  </style>
-</head>
-<body>
-  <canvas id="artCanvas"></canvas>
-  \x3Cscript>
-    const canvas = document.getElementById('artCanvas');
-    const ctx = canvas.getContext('2d');
-    let width = canvas.width = window.innerWidth;
-    let height = canvas.height = window.innerHeight;
-    
-    window.addEventListener('resize', () => {
-      width = canvas.width = window.innerWidth;
-      height = canvas.height = window.innerHeight;
-    });
-
-    class Ripple {
-      constructor(x, y) {
-        this.x = x;
-        this.y = y;
-        this.radius = 2;
-        this.maxRadius = Math.random() * 80 + 40;
-        this.opacity = 1;
-        this.color = "hsla(" + (Math.random() * 40 + 190) + ", 85%, 70%, 0.75)";
-        this.growSpeed = Math.random() * 2 + 1;
-      }
-      update() {
-        this.radius += this.growSpeed;
-        this.opacity = 1 - (this.radius / this.maxRadius);
-      }
-      draw() {
-        ctx.beginPath();
-        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-        ctx.strokeStyle = this.color;
-        ctx.lineWidth = 2.5;
-        ctx.globalAlpha = this.opacity;
-        ctx.stroke();
-      }
-    }
-
-    const ripples = [];
-    
-    function addRipple(x, y) {
-      if (ripples.length > 100) ripples.shift();
-      ripples.push(new Ripple(x, y));
-    }
-
-    window.addEventListener('mousemove', (e) => {
-      if (Math.random() < 0.3) addRipple(e.clientX, e.clientY);
-    });
-
-    window.addEventListener('touchmove', (e) => {
-      if (e.touches.length > 0 && Math.random() < 0.3) {
-        addRipple(e.touches[0].clientX, e.touches[0].clientY);
-      }
-    });
-
-    let autoTimer = 0;
-    function animate() {
-      ctx.fillStyle = 'rgba(5, 5, 10, 0.1)';
-      ctx.fillRect(0, 0, width, height);
-
-      autoTimer++;
-      if (autoTimer % 30 === 0) {
-        addRipple(Math.random() * width, Math.random() * height);
-      }
-
-      for (let i = ripples.length - 1; i >= 0; i--) {
-        ripples[i].update();
-        if (ripples[i].opacity <= 0) {
-          ripples.splice(i, 1);
-        } else {
-          ripples[i].draw();
-        }
-      }
-      requestAnimationFrame(animate);
-    }
-    animate();
-  \x3C/script>
-</body>
-</html>`;
-
-    // Elegant Waiting Screen Template when no student art is uploaded yet
-    const emptyGalleryDoc = `<!DOCTYPE html>
-<html lang="ko">
-<head>
-  <meta charset="UTF-8">
-  <style>
-    body, html { margin:0; padding:0; display:flex; flex-direction:column; align-items:center; justify-content:center; background:#070a0e; color:#a5f3fc; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; text-align:center; height:100vh; overflow:hidden; }
-    .box { padding: 2.5rem; border-radius: 2rem; background: rgba(255,255,255,0.02); border: 1.5px dashed rgba(165,243,252,0.12); max-width: 440px; box-shadow: 0 25px 60px rgba(0,0,0,0.4); transform: translateY(-10px); }
-    h1 { font-size: 1.2rem; margin-bottom: 0.6rem; color: #ffffff; font-weight: 700; letter-spacing: -0.03em; }
-    p { font-size: 0.85rem; color: #94a3b8; line-height: 1.6; margin: 0; font-weight: 400; }
-    .icon { font-size: 2.5rem; margin-bottom: 1.2rem; display: inline-block; animation: floatAndPulse 2.5s infinite ease-in-out; }
-    @keyframes floatAndPulse { 
-      0%, 100% { transform: scale(1) translateY(0); opacity: 0.7; } 
-      50% { transform: scale(1.08) translateY(-8px); opacity: 1; } 
-    }
-  </style>
-</head>
-<body>
-  <div class="box">
-    <div class="icon">🎨</div>
-    <h1>우리 반 전시 상영 대기 중</h1>
-    <p>현재 등록된 학생 미술 작품이 없습니다.<br>화면 아무 곳에나 학생들의 <b>.html</b> 파일을 던져 놓으면 아름다운 미디어 아트 전시가 즉시 시작됩니다.</p>
-  </div>
-</body>
-</html>`;
-
+    /* Global Application State variables */
     let playlist = [];
     let currentIndex = 0;
     let autoPlay = true;
     let timerInterval = null;
-    let PLAY_DURATION = 10000; // 10s default
+    let PLAY_DURATION = 10000; // default 10s
     let isProjectionMode = false;
-    let db = null; // Cloud DB
+    let db = null; // Cloud DB Reference (Firebase Firestore)
+    
+    // File upload data buffer
+    let studioUploadedFileContent = "";
 
-    // Elements
+    // DOM Elements Cache
+    const sidebarPanel = document.getElementById('sidebar-panel');
     const playlistContainer = document.getElementById('playlist-container');
-    const iframeExhibition = document.getElementById('exhibition-iframe');
-    const galleryLoader = document.getElementById('gallery-loader');
-    const loadingTitle = document.getElementById('loading-title');
+    const artIframe = document.getElementById('art-iframe');
+    const emptyState = document.getElementById('empty-state');
     const artInfoPanel = document.getElementById('art-info-panel');
-    const titleEl = document.getElementById('current-art-title');
-    const authorEl = document.getElementById('current-art-author');
-    const progressBar = document.getElementById('progress-bar');
-    const artworkCountEl = document.getElementById('artwork-count');
+    const artInfoTitle = document.getElementById('art-info-title');
+    const artInfoCreator = document.getElementById('art-info-creator');
 
-    // Controls
     const btnPlayPause = document.getElementById('btn-play-pause');
     const playPauseIcon = document.getElementById('play-pause-icon');
-    const selectDuration = document.getElementById('select-duration');
-    const btnPrev = document.getElementById('btn-prev');
     const btnNext = document.getElementById('btn-next');
-    const sidebarPanel = document.getElementById('sidebar-panel');
-    const btnToggleSidebar = document.getElementById('btn-toggle-sidebar');
-    const btnMobileTrigger = document.getElementById('btn-mobile-trigger');
+    const btnPrev = document.getElementById('btn-prev');
+    const selectDuration = document.getElementById('select-duration');
 
-    // Studio Elements
-    const studioModal = document.getElementById('studio-modal');
     const btnOpenStudio = document.getElementById('btn-open-studio');
     const btnCloseStudio = document.getElementById('btn-close-studio');
-    const codeEditor = document.getElementById('code-editor');
-    const inputArtTitle = document.getElementById('input-art-title');
-    const inputArtAuthor = document.getElementById('input-art-author');
-    const fileInput = document.getElementById('file-input');
-    const dropZone = document.getElementById('drop-zone');
+    const studioModal = document.getElementById('studio-modal');
+    const studioDropzone = document.getElementById('studio-dropzone');
+    const studioFileInput = document.getElementById('studio-file-input');
+    const studioTitleInput = document.getElementById('studio-title');
+    const studioCreatorInput = document.getElementById('studio-creator');
     const studioPreviewIframe = document.getElementById('studio-preview-iframe');
+    const studioPreviewPlaceholder = document.getElementById('studio-preview-placeholder');
 
-    // Registration Elements
-    const btnRegisterLocal = document.getElementById('btn-register-local');
-    const btnRegisterCloud = document.getElementById('btn-register-cloud');
-    const outputShareUrl = document.getElementById('output-share-url');
-    const btnCopyUrl = document.getElementById('btn-copy-url');
+    const btnSaveLocal = document.getElementById('btn-save-local');
+    const btnSaveCloud = document.getElementById('btn-save-cloud');
 
-    // Settings
-    const settingsModal = document.getElementById('settings-modal');
     const btnOpenSettings = document.getElementById('btn-open-settings');
     const btnCloseSettings = document.getElementById('btn-close-settings');
-    const inputFirebaseConfig = document.getElementById('input-firebase-config');
-    const btnSaveFirebase = document.getElementById('btn-save-firebase');
-    const btnResetFirebase = document.getElementById('btn-reset-firebase');
-    const btnExportBackup = document.getElementById('btn-export-backup');
-    const inputImportBackup = document.getElementById('input-import-backup');
+    const settingsModal = document.getElementById('settings-modal');
+    const firebaseConfigInput = document.getElementById('firebase-config-input');
+    const btnSaveSettings = document.getElementById('btn-save-settings');
+    const btnClearLocal = document.getElementById('btn-clear-local');
+
     const btnProjectorMode = document.getElementById('btn-projector-mode');
     const btnExitProjector = document.getElementById('btn-exit-projector');
+    const dragOverlay = document.getElementById('drag-overlay');
+    const btnMobileTrigger = document.getElementById('btn-mobile-trigger');
 
-    // Alert
-    const alertModal = document.getElementById('alert-modal');
-    const alertIconBox = document.getElementById('alert-icon-box');
-    const alertTitleText = document.getElementById('alert-title-text');
-    const alertBodyText = document.getElementById('alert-body-text');
-    const alertBtnConfirm = document.getElementById('alert-btn-confirm');
-    const alertBtnCancel = document.getElementById('alert-btn-cancel');
-
-    // Custom non-blocking Alert
-    function customAlert(title, message, iconType = 'success', onConfirm = null, showCancel = false) {
-      alertTitleText.innerText = title;
-      alertBodyText.innerText = message;
+    /* Helper: Show Floating Toast Alerts */
+    function showToast(message, type = 'success') {
+      const toast = document.createElement('div');
+      toast.className = `px-4 py-2.5 rounded-xl text-xs font-bold shadow-2xl flex items-center gap-2 animate-bounce pointer-events-auto transition-all ${
+        type === 'success' ? 'bg-indigo-600 text-white' : 'bg-rose-50 text-rose-700 border border-rose-200'
+      }`;
       
-      let icon = '';
-      if (iconType === 'error') {
-        icon = '<i class="fa-solid fa-triangle-exclamation"></i>';
-        alertIconBox.className = "w-12 h-12 rounded-full mx-auto flex items-center justify-center text-lg bg-rose-50 text-rose-500 shadow-md shadow-rose-100";
-      } else if (iconType === 'success') {
-        icon = '<i class="fa-solid fa-circle-check"></i>';
-        alertIconBox.className = "w-12 h-12 rounded-full mx-auto flex items-center justify-center text-lg bg-emerald-50 text-emerald-500 shadow-md shadow-emerald-100";
-      } else {
-        icon = '<i class="fa-solid fa-circle-info"></i>';
-        alertIconBox.className = "w-12 h-12 rounded-full mx-auto flex items-center justify-center text-lg bg-indigo-50 text-indigo-500 shadow-md shadow-indigo-100";
-      }
-      alertIconBox.innerHTML = icon;
+      const icon = document.createElement('i');
+      icon.className = type === 'success' ? 'fa-solid fa-circle-check text-emerald-400' : 'fa-solid fa-triangle-exclamation text-rose-500';
+      
+      const text = document.createElement('span');
+      text.textContent = message;
 
-      alertBtnCancel.classList.toggle('hidden', !showCancel);
-      alertModal.classList.remove('hidden');
-      alertModal.classList.add('flex');
+      toast.appendChild(icon);
+      toast.appendChild(text);
+      document.getElementById('toast-container').appendChild(toast);
 
-      alertBtnConfirm.onclick = () => {
-        alertModal.classList.add('hidden');
-        alertModal.classList.remove('flex');
-        if (onConfirm) onConfirm();
-      };
-      alertBtnCancel.onclick = () => {
-        alertModal.classList.add('hidden');
-        alertModal.classList.remove('flex');
-      };
+      setTimeout(() => {
+        toast.classList.remove('animate-bounce');
+        toast.classList.add('opacity-0', 'translate-y-[-10px]');
+        setTimeout(() => toast.remove(), 400);
+      }, 3000);
     }
 
-    // Cloud Firebase Connection
-    async function initFirebase() {
-      const savedConfig = localStorage.getItem('art_firebase_config');
+    /* Helper: Robust Custom Parser to grab JSON out of Javascript blocks */
+    function parseFirebaseConfig(rawText) {
+      if (!rawText || rawText.trim() === '') return null;
+      try {
+        return JSON.parse(rawText.trim());
+      } catch (e) {
+        const braceMatch = rawText.match(/\{[\s\S]*\}/);
+        if (braceMatch) {
+          const content = braceMatch[0];
+          // Replace single quotes with double quotes and format properties safely
+          let jsonStr = content
+            .replace(/'/g, '"')
+            .replace(/([a-zA-Z0-9_]+)\s*:/g, '"$1":')
+            .replace(/,\s*([\]}])/g, '$1');
+          try {
+            return JSON.parse(jsonStr);
+          } catch (e2) {
+            const config = {};
+            const keys = ['apiKey', 'authDomain', 'projectId', 'storageBucket', 'messagingSenderId', 'appId', 'measurementId'];
+            keys.forEach(key => {
+              const regex = new RegExp(`['"]?${key}['"]?\\s*:\\s*['"]([^'"]+)['"]`);
+              const match = rawText.match(regex);
+              if (match && match[1]) {
+                config[key] = match[1];
+              }
+            });
+            if (config.apiKey && config.projectId) {
+              return config;
+            }
+          }
+        }
+      }
+      return null;
+    }
+
+    /* Set and Memorize Exhibition Mode State */
+    function setProjectorMode(enable) {
+      isProjectionMode = enable;
+      localStorage.setItem('art_projector_mode', enable ? 'true' : 'false');
+      if (enable) {
+        sidebarPanel.classList.add('-translate-x-full', 'absolute');
+        btnExitProjector.classList.remove('hidden');
+        btnExitProjector.classList.add('flex');
+        artInfoPanel.classList.add('scale-105', 'translate-x-3');
+      } else {
+        sidebarPanel.classList.remove('-translate-x-full', 'absolute');
+        btnExitProjector.classList.add('hidden');
+        btnExitProjector.classList.remove('flex');
+        artInfoPanel.classList.remove('scale-105', 'translate-x-3');
+      }
+    }
+
+    /* Initialize Firebase with Local Config Storage */
+    function initFirebase() {
+      const savedConfig = localStorage.getItem('class_art_fb_config');
       if (!savedConfig) return;
 
       try {
         const config = JSON.parse(savedConfig);
-        inputFirebaseConfig.value = JSON.stringify(config, null, 2);
-        
-        await injectScript("https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js");
-        await injectScript("https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js");
-        await injectScript("https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js");
-
-        if (window.firebase) {
-          if (!firebase.apps.length) {
-            firebase.initializeApp(config);
-          }
-          await firebase.auth().signInAnonymously();
-          db = firebase.firestore();
-          
-          db.collection("artifacts").doc("classroom_art").collection("public")
-            .orderBy("timestamp", "desc")
-            .onSnapshot((snapshot) => {
-              const cloudItems = [];
-              snapshot.forEach((doc) => {
-                const data = doc.data();
-                cloudItems.push({
-                  id: doc.id,
-                  title: data.title || "미디어아트 제목",
-                  author: data.author || "이름",
-                  code: data.code || ""
-                });
-              });
-
-              if (cloudItems.length > 0) {
-                playlist = [...cloudItems];
-                saveToLocalStorage(false);
-                renderPlaylist();
-                playArtwork(0);
-              }
-            }, (err) => {
-              console.error("Firebase Sync error: ", err);
-            });
+        // Avoid duplicate initialization
+        if (firebase.apps.length === 0) {
+          firebase.initializeApp(config);
         }
+        
+        db = firebase.firestore();
+
+        // Anonymous auth sign-in
+        firebase.auth().signInAnonymously()
+          .then(() => {
+            console.log("Firebase Anonymous Auth Success");
+            syncCloudArtworks();
+          })
+          .catch((error) => {
+            console.error("Firebase Auth Error", error);
+            showToast("실시간 클라우드 로그인에 실패했습니다. 규칙을 확인하세요.", "error");
+          });
       } catch (err) {
-        console.error("Firebase start failed: ", err);
+        console.error("Firebase Init Error", err);
       }
     }
 
-    function injectScript(src) {
-      return new Promise((resolve, reject) => {
-        if (document.querySelector(`script[src="${src}"]`)) return resolve();
-        const script = document.createElement('script');
-        script.src = src;
-        script.onload = resolve;
-        script.onerror = reject;
-        document.head.appendChild(script);
+    /* Sync and fetch artifacts in real-time from Firestore */
+    function syncCloudArtworks() {
+      if (!db) return;
+
+      db.collection("artifacts").orderBy("timestamp", "desc").onSnapshot((snapshot) => {
+        let cloudList = [];
+        snapshot.forEach((doc) => {
+          const data = doc.data();
+          cloudList.push({
+            id: doc.id,
+            title: data.title || "무제",
+            creator: data.creator || "익명 작가",
+            code: data.code || "",
+            isCloud: true,
+            timestamp: data.timestamp
+          });
+        });
+
+        // Load local ones and merge
+        const localSaved = localStorage.getItem('class_art_local_playlist');
+        let localList = localSaved ? JSON.parse(localSaved) : [];
+
+        // Combine (Cloud takes precedence or merges gracefully)
+        playlist = [...cloudList, ...localList];
+        
+        renderPlaylist();
+        
+        // Auto-play first item if not playing yet
+        if (playlist.length > 0 && artIframe.src === "") {
+          playArtwork(0);
+        }
+      }, (err) => {
+        console.error("Cloud listening failed: ", err);
       });
     }
 
-    // Storage Management
-    function saveToLocalStorage(writeLocal = true) {
-      if (writeLocal) {
-        localStorage.setItem('art_playlist', JSON.stringify(playlist));
-      }
+    /* Save local artworks to local storage */
+    function saveLocalPlaylistToStorage(list) {
+      localStorage.setItem('class_art_local_playlist', JSON.stringify(list));
     }
 
-    function loadFromLocalStorage() {
-      const stored = localStorage.getItem('art_playlist');
-      if (stored) {
-        try {
-          playlist = JSON.parse(stored);
-        } catch (e) {
-          playlist = [];
-        }
-      } else {
-        playlist = []; // Starts as empty, waiting for students to drop their works
-      }
-    }
-
-    function renderIframe(iframeElement, htmlCode) {
-      if (!iframeElement) return;
-      iframeElement.srcdoc = "";
-      setTimeout(() => {
-        iframeElement.srcdoc = htmlCode;
-      }, 50);
-    }
-
-    // Slide Core Player
-    function playArtwork(index) {
+    /* Render list of Artworks in the sidebar */
+    function renderPlaylist() {
+      playlistContainer.innerHTML = "";
       if (playlist.length === 0) {
-        titleEl.innerText = "전시관 상영 대기 중";
-        authorEl.innerText = "🧑‍🎨 등록된 작품 없음";
-        
-        galleryLoader.classList.add('opacity-0');
-        galleryLoader.classList.remove('opacity-100');
-        renderIframe(iframeExhibition, emptyGalleryDoc);
-        
-        clearInterval(timerInterval);
-        progressBar.style.width = '0%';
+        playlistContainer.innerHTML = `
+          <div class="p-4 text-center rounded-xl bg-slate-50 border border-slate-200 text-slate-400 text-[11px]">
+            등록된 작품이 아직 없습니다.
+          </div>
+        `;
+        emptyState.classList.remove('hidden');
+        artInfoPanel.classList.remove('opacity-100');
+        artInfoPanel.classList.add('opacity-0');
         return;
       }
 
+      emptyState.classList.add('hidden');
+
+      playlist.forEach((item, index) => {
+        const btn = document.createElement('button');
+        btn.className = `w-full text-left p-3 rounded-xl flex items-center justify-between transition-all border ${
+          index === currentIndex 
+            ? 'bg-indigo-50 border-indigo-200 text-indigo-700 shadow-sm' 
+            : 'bg-slate-50 border-transparent text-slate-600 hover:bg-slate-100/80 hover:text-slate-800'
+        }`;
+
+        const isCurrent = index === currentIndex;
+
+        btn.innerHTML = `
+          <div class="min-w-0 pr-2">
+            <h4 class="font-bold text-xs truncate ${isCurrent ? 'text-indigo-600' : 'text-slate-700'}">${item.title}</h4>
+            <p class="text-[10px] text-slate-400 truncate mt-0.5">${item.creator}</p>
+          </div>
+          <div class="flex items-center gap-1.5 shrink-0">
+            ${item.isCloud ? '<span class="text-[9px] px-1.5 py-0.5 rounded bg-indigo-100 text-indigo-600 border border-indigo-200 font-semibold uppercase">Cloud</span>' : ''}
+            <span class="w-6 h-6 rounded-lg bg-slate-200/60 flex items-center justify-center text-[10px] font-bold">
+              ${isCurrent ? '<i class="fa-solid fa-play text-indigo-600 animate-pulse"></i>' : index + 1}
+            </span>
+          </div>
+        `;
+
+        btn.onclick = () => {
+          playArtwork(index);
+        };
+
+        playlistContainer.appendChild(btn);
+      });
+    }
+
+    /* Start execution of selected Artwork inside iframe */
+    function playArtwork(index) {
+      if (playlist.length === 0) return;
+      
+      // Boundaries check
       if (index < 0) index = playlist.length - 1;
       if (index >= playlist.length) index = 0;
 
       currentIndex = index;
-      const target = playlist[currentIndex];
+      renderPlaylist();
+
+      const item = playlist[currentIndex];
       
-      titleEl.innerText = target.title;
-      authorEl.innerText = `🧑‍🎨 ${target.author}`;
+      // Update Lower-Left Corner Panel
+      artInfoTitle.textContent = item.title;
+      artInfoCreator.textContent = `🧑‍🎨 ${item.creator}`;
+      artInfoPanel.classList.remove('opacity-0', 'translate-y-2');
+      artInfoPanel.classList.add('opacity-100', 'translate-y-0');
+
+      // Seamless Transition: Fade iframe briefly
+      artIframe.style.opacity = "0.2";
       
-      galleryLoader.classList.remove('opacity-0');
-      galleryLoader.classList.add('opacity-100');
-      loadingTitle.innerText = `"${target.title}" 로드 중...`;
-
-      renderIframe(iframeExhibition, target.code);
-
-      document.querySelectorAll('.playlist-card').forEach(card => {
-        card.classList.remove('border-indigo-400', 'bg-indigo-50/20');
-        card.classList.add('border-slate-100', 'bg-white');
-      });
-      const activeCard = document.getElementById(`art-card-${currentIndex}`);
-      if (activeCard) {
-        activeCard.classList.remove('border-slate-100', 'bg-white');
-        activeCard.classList.add('border-indigo-400', 'bg-indigo-50/20');
-        activeCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-      }
-
       setTimeout(() => {
-        galleryLoader.classList.add('opacity-0');
-        galleryLoader.classList.remove('opacity-100');
-      }, 600);
+        // Construct Sandbox Safe URL Context for internal Javascript
+        if (artIframe.src) {
+          URL.revokeObjectURL(artIframe.src);
+        }
+        
+        const blob = new Blob([item.code], { type: 'text/html' });
+        const blobUrl = URL.createObjectURL(blob);
+        artIframe.src = blobUrl;
+        
+        artIframe.onload = () => {
+          artIframe.style.opacity = "1";
+        };
+      }, 250);
 
       if (autoPlay) {
         resetTimer();
       }
     }
 
-    // Play loop logic
-    function resetTimer() {
-      clearInterval(timerInterval);
-      let elapsed = 0;
-      progressBar.style.width = '0%';
-      
-      const tick = 100;
-      timerInterval = setInterval(() => {
-        elapsed += tick;
-        const pct = Math.min((elapsed / PLAY_DURATION) * 100, 100);
-        progressBar.style.width = `${pct}%`;
+    /* Next / Previous handlers */
+    function nextArtwork() {
+      playArtwork(currentIndex + 1);
+    }
 
-        if (elapsed >= PLAY_DURATION) {
-          clearInterval(timerInterval);
+    function prevArtwork() {
+      playArtwork(currentIndex - 1);
+    }
+
+    /* Auto Play Timer configurations */
+    function startTimer() {
+      clearInterval(timerInterval);
+      timerInterval = setInterval(() => {
+        if (autoPlay && playlist.length > 0) {
           nextArtwork();
         }
-      }, tick);
+      }, PLAY_DURATION);
+    }
+
+    function resetTimer() {
+      startTimer();
     }
 
     function togglePlayPause() {
       autoPlay = !autoPlay;
       if (autoPlay) {
-        playPauseIcon.className = "fa-solid fa-pause text-xs";
+        playPauseIcon.className = "fa-solid fa-pause text-sm";
         resetTimer();
+        showToast("자동 상영 재생 시작");
       } else {
-        playPauseIcon.className = "fa-solid fa-play text-xs";
+        playPauseIcon.className = "fa-solid fa-play text-sm";
         clearInterval(timerInterval);
-        progressBar.style.width = '0%';
+        showToast("자동 상영 일시 중지");
       }
     }
 
-    function nextArtwork() {
-      if (playlist.length <= 1) return;
-      playArtwork(currentIndex + 1);
-    }
-
-    function prevArtwork() {
-      if (playlist.length <= 1) return;
-      playArtwork(currentIndex - 1);
-    }
-
-    // Sidebar list renderer
-    function renderPlaylist() {
-      playlistContainer.innerHTML = "";
-      artworkCountEl.innerText = playlist.length;
-
-      if (playlist.length === 0) {
-        playlistContainer.innerHTML = `
-          <div class="text-center py-10 px-4 border border-dashed border-slate-100 rounded-2xl bg-slate-50/40">
-            <i class="fa-solid fa-cloud-arrow-up text-indigo-400/70 text-2xl mb-2.5 block"></i>
-            <p class="text-[10px] text-slate-400 font-bold leading-relaxed">상영 중인 작품이 없습니다.<br>파일을 마우스로 화면에 던지거나 아래 올리기 버튼으로 등록해 주세요!</p>
-          </div>
-        `;
-        return;
-      }
-
-      playlist.forEach((art, index) => {
-        const card = document.createElement('div');
-        card.id = `art-card-${index}`;
-        card.className = `playlist-card group p-3 rounded-xl border border-slate-100 bg-white shadow-sm flex items-center justify-between gap-3 cursor-pointer transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md hover:border-slate-200`;
-        
-        card.onclick = (e) => {
-          if (e.target.closest('.btn-delete-card')) return;
-          playArtwork(index);
-        };
-
-        card.innerHTML = `
-          <div class="flex items-center gap-3 overflow-hidden">
-            <div class="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-500 shrink-0 text-xs font-bold">
-              ${index + 1}
-            </div>
-            <div class="overflow-hidden">
-              <h3 class="text-[11px] font-bold text-slate-700 truncate">${art.title}</h3>
-              <p class="text-[9px] text-slate-400 mt-0.5">🧑‍🎨 ${art.author}</p>
-            </div>
-          </div>
-          <button class="btn-delete-card text-slate-300 hover:text-rose-500 p-1.5 rounded-md hover:bg-rose-50 transition-colors shrink-0" title="작품 제외">
-            <i class="fa-solid fa-trash-can text-[10px]"></i>
-          </button>
-        `;
-
-        card.querySelector('.btn-delete-card').onclick = (e) => {
-          e.stopPropagation();
-          customAlert("작품 제외", `"${art.title}" 작품을 목록에서 삭제할까요?`, 'info', () => {
-            removeArtwork(index);
-          }, true);
-        };
-
-        playlistContainer.appendChild(card);
-      });
-    }
-
-    function removeArtwork(index) {
-      if (db) {
-        const targetId = playlist[index].id;
-        if (targetId) {
-          db.collection("artifacts").doc("classroom_art").collection("public").doc(targetId).delete()
-            .then(() => {
-              showToast("삭제 완료", "공용 클라우드에서 삭제되었습니다.");
-            })
-            .catch((err) => {
-              customAlert("오류 발생", "클라우드 삭제 실패: " + err.message, 'error');
-            });
-          return;
-        }
-      }
-
-      playlist.splice(index, 1);
-      saveToLocalStorage();
-      renderPlaylist();
-      
-      if (playlist.length === 0) {
-        playArtwork(0);
-      } else {
-        playArtwork(currentIndex >= playlist.length ? 0 : currentIndex);
-      }
-    }
-
-    // Deep URL parsing on startup
-    function checkIncomingUrl() {
-      const urlParams = new URLSearchParams(window.location.search);
-      const codeParam = urlParams.get('code');
-      const titleParam = urlParams.get('title') || "미디어아트 제목";
-      const authorParam = urlParams.get('author') || "이름";
-
-      if (codeParam) {
-        try {
-          const decoded = LZString.decompressFromEncodedURIComponent(codeParam);
-          if (decoded) {
-            const newArt = {
-              title: titleParam,
-              author: authorParam,
-              code: decoded
-            };
-
-            const dupIndex = playlist.findIndex(item => item.code === decoded);
-            if (dupIndex === -1) {
-              playlist.unshift(newArt);
-              saveToLocalStorage();
-              customAlert("전시관 업로드 완료", `공유받은 친구의 작품 [${titleParam} - ${authorParam}]이 내 보관함에 합쳐졌습니다!`);
-            } else {
-              currentIndex = dupIndex;
-            }
-
-            window.history.replaceState({}, document.title, window.location.pathname);
-            renderPlaylist();
-            playArtwork(0);
-          }
-        } catch (e) {
-          console.error("Link parsing error: ", e);
-        }
-      }
-    }
-
+    /* Modal state switches */
     function enterStudio() {
       studioModal.classList.remove('hidden');
       studioModal.classList.add('flex');
-      
-      if (!codeEditor.value.trim()) {
-        resetEditorToBoilerplate();
+      studioTitleInput.value = "";
+      studioCreatorInput.value = "";
+      studioUploadedFileContent = "";
+      studioPreviewPlaceholder.classList.remove('hidden');
+      studioPreviewIframe.src = "";
+    }
+
+    function leaveStudio() {
+      studioModal.classList.add('hidden');
+      studioModal.classList.remove('flex');
+    }
+
+    /* Handle visual Studio preview changes */
+    function updateStudioPreview(htmlContent) {
+      studioUploadedFileContent = htmlContent;
+      studioPreviewPlaceholder.classList.add('hidden');
+
+      const blob = new Blob([htmlContent], { type: 'text/html' });
+      const previewUrl = URL.createObjectURL(blob);
+      studioPreviewIframe.src = previewUrl;
+    }
+
+    /* Common parser helper to decode HTML text file loading */
+    function loadFileText(file, callback) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        callback(e.target.result);
+      };
+      reader.readAsText(file);
+    }
+
+    /* Drag & Drop handling logic */
+    function bindDragAndDrop(element, onLoaded) {
+      element.ondragover = (e) => {
+        e.preventDefault();
+      };
+      element.ondrop = (e) => {
+        e.preventDefault();
+        const files = e.dataTransfer.files;
+        if (files.length > 0 && files[0].name.endsWith('.html')) {
+          loadFileText(files[0], (content) => {
+            onLoaded(files[0].name.replace('.html', ''), content);
+          });
+        } else {
+          showToast("올바른 .html 파일 형식을 올려주세요.", "error");
+        }
+      };
+    }
+
+    // Bind Screen-Wide Drag and Drop for Direct fast Upload
+    window.ondragenter = (e) => {
+      e.preventDefault();
+      dragOverlay.classList.remove('hidden');
+    };
+    dragOverlay.ondragleave = (e) => {
+      e.preventDefault();
+      dragOverlay.classList.add('hidden');
+    };
+    window.ondragover = (e) => {
+      e.preventDefault();
+    };
+    window.ondrop = (e) => {
+      e.preventDefault();
+      dragOverlay.classList.add('hidden');
+      const files = e.dataTransfer.files;
+      if (files.length > 0 && files[0].name.endsWith('.html')) {
+        loadFileText(files[0], (content) => {
+          enterStudio();
+          const autoTitle = files[0].name.replace('.html', '');
+          studioTitleInput.value = autoTitle;
+          updateStudioPreview(content);
+          showToast("파일이 스튜디오에 준비되었습니다!");
+        });
       }
-      updateStudioPreview();
-    }
+    };
 
-    function resetEditorToBoilerplate() {
-      codeEditor.value = baseBoilerplate;
-      inputArtTitle.value = "미디어아트 제목";
-      inputArtAuthor.value = "이름";
-      updateStudioPreview();
-    }
-
-    function updateStudioPreview() {
-      renderIframe(studioPreviewIframe, codeEditor.value);
-    }
-
-    function compileSharingLink() {
-      const title = inputArtTitle.value.trim() || "미디어아트 제목";
-      const author = inputArtAuthor.value.trim() || "이름";
-      const code = codeEditor.value.trim();
-
-      if (!code) {
-        customAlert("생성 오류", "업로드되었거나 작성된 소스 코드가 비어 있습니다.", "error");
-        return null;
-      }
-
-      try {
-        const compressed = LZString.compressToEncodedURIComponent(code);
-        const originUrl = window.location.origin + window.location.pathname;
-        const generatedLink = `${originUrl}?code=${compressed}&title=${encodeURIComponent(title)}&author=${encodeURIComponent(author)}`;
-        
-        outputShareUrl.value = generatedLink;
-        return { title, author, code, generatedLink };
-      } catch (err) {
-        customAlert("인코딩 실패", "코드의 용량이 너무 크거나 정상적인 텍스트 문서가 아닙니다.", "error");
-        return null;
-      }
-    }
-
-    // Mounting event listeners
-    window.addEventListener('load', () => {
-      loadFromLocalStorage();
-      renderPlaylist();
-      checkIncomingUrl();
-      initFirebase();
-
-      playArtwork(0);
+    // Bind Studio Dropzone
+    bindDragAndDrop(studioDropzone, (fileName, content) => {
+      studioTitleInput.value = fileName;
+      updateStudioPreview(content);
+      showToast("미리보기 캔버스 구동 완료!");
     });
 
+    studioFileInput.onchange = (e) => {
+      const files = e.target.files;
+      if (files.length > 0) {
+        loadFileText(files[0], (content) => {
+          studioTitleInput.value = files[0].name.replace('.html', '');
+          updateStudioPreview(content);
+          showToast("미리보기를 갱신했습니다!");
+        });
+      }
+    };
+    studioDropzone.onclick = () => studioFileInput.click();
+
+    /* Save local logic */
+    btnSaveLocal.onclick = () => {
+      const title = studioTitleInput.value.trim() || "무제 작품";
+      const creator = studioCreatorInput.value.trim() || "우리 반 작가";
+      
+      if (!studioUploadedFileContent) {
+        showToast("먼저 .html 파일을 등록해 주세요.", "error");
+        return;
+      }
+
+      // Load current local ones
+      const localSaved = localStorage.getItem('class_art_local_playlist');
+      let localList = localSaved ? JSON.parse(localSaved) : [];
+
+      const newArt = {
+        id: "local_" + Date.now(),
+        title: title,
+        creator: creator,
+        code: studioUploadedFileContent,
+        isCloud: false,
+        timestamp: Date.now()
+      };
+
+      localList.unshift(newArt);
+      saveLocalPlaylistToStorage(localList);
+
+      // Re-merge with Cloud list (if exists) and play
+      if (db) {
+        // Sync triggers reload automatically. Just leave.
+      } else {
+        playlist = [...localList];
+        renderPlaylist();
+        playArtwork(0);
+      }
+
+      leaveStudio();
+      showToast("로컬 보관함 등록 성공 및 즉시 상영!");
+    };
+
+    /* Save cloud logic */
+    btnSaveCloud.onclick = () => {
+      const title = studioTitleInput.value.trim() || "무제 작품";
+      const creator = studioCreatorInput.value.trim() || "우리 반 작가";
+      
+      if (!studioUploadedFileContent) {
+        showToast("먼저 .html 파일을 등록해 주세요.", "error");
+        return;
+      }
+
+      if (!db) {
+        showToast("연결된 공용 클라우드가 없습니다. 하단 설정을 먼저 완료해 주세요.", "error");
+        return;
+      }
+
+      db.collection("artifacts").add({
+        title: title,
+        creator: creator,
+        code: studioUploadedFileContent,
+        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+      })
+      .then(() => {
+        showToast("실시간 학급 공용 전시판에 업로드 완료!");
+        leaveStudio();
+      })
+      .catch((error) => {
+        console.error("Cloud upload error", error);
+        showToast("업로드 권한이 없거나 오류가 발생했습니다.", "error");
+      });
+    };
+
+    /* Settings Modal and Firebase config parser logic */
+    btnOpenSettings.onclick = () => {
+      const saved = localStorage.getItem('class_art_fb_config');
+      if (saved) {
+        firebaseConfigInput.value = JSON.stringify(JSON.parse(saved), null, 2);
+      } else {
+        firebaseConfigInput.value = "";
+      }
+      settingsModal.classList.remove('hidden');
+    };
+
+    btnCloseSettings.onclick = () => {
+      settingsModal.classList.add('hidden');
+    };
+
+    btnSaveSettings.onclick = () => {
+      const rawInput = firebaseConfigInput.value;
+      const parsed = parseFirebaseConfig(rawInput);
+
+      if (!parsed) {
+        showToast("올바른 Firebase 형식 데이터를 인식할 수 없습니다. 확인해 주세요.", "error");
+        return;
+      }
+
+      localStorage.setItem('class_art_fb_config', JSON.stringify(parsed));
+      showToast("설정 적용 완료! 전시관을 재시동합니다.");
+      settingsModal.classList.add('hidden');
+
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
+    };
+
+    /* Reset Storage button */
+    btnClearLocal.onclick = () => {
+      if (confirm("정말로 이 컴퓨터 기기에 저장된 모든 로컬 작품들을 완전히 삭제하시겠습니까? (클라우드 작품은 안전하게 유지됩니다)")) {
+        localStorage.removeItem('class_art_local_playlist');
+        showToast("로컬 보관함이 완전히 비워졌습니다.");
+        setTimeout(() => window.location.reload(), 1000);
+      }
+    };
+
+    /* Sidebar controls */
     btnPlayPause.onclick = togglePlayPause;
     btnNext.onclick = nextArtwork;
     btnPrev.onclick = prevArtwork;
@@ -942,219 +836,44 @@
       if (autoPlay) resetTimer();
     };
 
-    btnToggleSidebar.onclick = () => {
-      sidebarPanel.classList.toggle('-translate-x-full');
-    };
-    
+    /* Exhibition Viewport State triggers */
+    btnProjectorMode.onclick = () => setProjectorMode(true);
+    btnExitProjector.onclick = () => setProjectorMode(false);
+    btnOpenStudio.onclick = enterStudio;
+    btnCloseStudio.onclick = leaveStudio;
+
+    /* Mobile drawer trigger */
     btnMobileTrigger.onclick = () => {
       sidebarPanel.classList.toggle('-translate-x-full');
-      if (sidebarPanel.classList.contains('-translate-x-full')) {
-        btnMobileTrigger.innerHTML = '<i class="fa-solid fa-bars text-sm"></i>';
+    };
+
+    /* App mounting sequence */
+    window.addEventListener('load', () => {
+      // 1. Restore Projector/Exhibition state immediately to prevent layout shifts!
+      const savedMode = localStorage.getItem('art_projector_mode');
+      if (savedMode === 'true') {
+        setProjectorMode(true);
       } else {
-        btnMobileTrigger.innerHTML = '<i class="fa-solid fa-xmark text-sm"></i>';
+        setProjectorMode(false);
       }
-    };
 
-    document.getElementById('touch-nav-prev').onclick = prevArtwork;
-    document.getElementById('touch-nav-next').onclick = nextArtwork;
+      // 2. Load Local artifacts
+      const localSaved = localStorage.getItem('class_art_local_playlist');
+      let localList = localSaved ? JSON.parse(localSaved) : [];
+      playlist = [...localList];
 
-    btnProjectorMode.onclick = () => {
-      isProjectionMode = true;
-      sidebarPanel.classList.add('hidden');
-      btnExitProjector.classList.remove('hidden');
-      btnExitProjector.classList.add('flex');
-      artInfoPanel.classList.add('scale-105', 'translate-x-3');
-    };
+      // 3. Setup Firebase
+      initFirebase();
 
-    btnExitProjector.onclick = () => {
-      isProjectionMode = false;
-      sidebarPanel.classList.remove('hidden');
-      btnExitProjector.classList.add('hidden');
-      btnExitProjector.classList.remove('flex');
-      artInfoPanel.classList.remove('scale-105', 'translate-x-3');
-    };
-
-    btnOpenStudio.onclick = enterStudio;
-    btnCloseStudio.onclick = () => {
-      studioModal.classList.add('hidden');
-      studioModal.classList.remove('flex');
-    };
-
-    fileInput.onchange = (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
-      readHtmlFile(file);
-    };
-
-    function readHtmlFile(file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        codeEditor.value = e.target.result;
-        const cleanName = file.name.replace(/\.[^/.]+$/, "");
-        inputArtTitle.value = cleanName;
-        updateStudioPreview();
-        compileSharingLink();
-      };
-      reader.readAsText(file);
-    }
-
-    dropZone.ondragover = (e) => {
-      e.preventDefault();
-      dropZone.classList.add('border-indigo-500', 'bg-indigo-100/40');
-    };
-    dropZone.ondragleave = () => {
-      dropZone.classList.remove('border-indigo-500', 'bg-indigo-100/40');
-    };
-    dropZone.ondrop = (e) => {
-      e.preventDefault();
-      dropZone.classList.remove('border-indigo-500', 'bg-indigo-100/40');
-      const file = e.dataTransfer.files[0];
-      if (file && (file.name.endsWith('.html') || file.name.endsWith('.htm'))) {
-        readHtmlFile(file);
-      } else {
-        customAlert("파일 오류", ".html 확장자를 지닌 코딩 파일만 드롭해 주세요.", "error");
-      }
-    };
-
-    codeEditor.oninput = () => {
-      updateStudioPreview();
-      compileSharingLink();
-    };
-
-    btnRegisterLocal.onclick = () => {
-      const info = compileSharingLink();
-      if (!info) return;
-
-      const newArt = {
-        title: info.title,
-        author: info.author,
-        code: info.code
-      };
-
-      // Ensure duplicates aren't added, but put at the front
-      playlist.unshift(newArt);
-      saveToLocalStorage();
+      // 4. Initial rendering
       renderPlaylist();
-      playArtwork(0);
-
-      customAlert("보관함 저장 완료", `"${info.title}" 작품이 전시관 상영 목록의 1번째 순서에 긴급 배정되었습니다!`);
-    };
-
-    btnRegisterCloud.onclick = async () => {
-      const info = compileSharingLink();
-      if (!info) return;
-
-      if (!db) {
-        customAlert("클라우드 연결 미완료", "하단 [⚙️ 전시관 설정] 메뉴에서 구글 파이어베이스 데이터베이스 토큰을 연동해 주세요. 로컬 저장만 가동됩니다.", "error");
-        return;
-      }
-
-      try {
-        await db.collection("artifacts").doc("classroom_art").collection("public").add({
-          title: info.title,
-          author: info.author,
-          code: info.code,
-          timestamp: firebase.firestore.FieldValue.serverTimestamp()
-        });
-        customAlert("클라우드 등록 완료", `전 세계 어디서든 학급 공용 실시간 보드에 즉시 노출됩니다!`);
-      } catch (err) {
-        customAlert("업로드 실패", "클라우드 저장소 규범 위반 또는 통신 오류: " + err.message, "error");
-      }
-    };
-
-    btnCopyUrl.onclick = () => {
-      const link = outputShareUrl.value;
-      if (!link) {
-        customAlert("오류", "공유 가능한 주소가 아직 생성되지 않았습니다. 먼저 파일을 올리거나 코드를 입력하세요.", "error");
-        return;
-      }
-      
-      outputShareUrl.select();
-      document.execCommand('copy');
-      
-      showToast("복사 성공", "미술 공유 URL 주소가 클립보드에 무사히 복사되었습니다!");
-    };
-
-    btnOpenSettings.onclick = () => {
-      settingsModal.classList.remove('hidden');
-      settingsModal.classList.add('flex');
-    };
-    btnCloseSettings.onclick = () => {
-      settingsModal.classList.add('hidden');
-      settingsModal.classList.remove('flex');
-    };
-
-    document.getElementById('btn-clear-all').onclick = () => {
-      customAlert("전체 비우기", "전시관에 등록된 모든 작품 목록을 완전히 비울까요?", "info", () => {
-        playlist = [];
-        saveToLocalStorage();
-        renderPlaylist();
+      if (playlist.length > 0) {
         playArtwork(0);
-        showToast("초기화 완료", "상영 중인 학생 미디어 아트를 모두 비웠습니다.");
-      }, true);
-    };
-
-    btnSaveFirebase.onclick = () => {
-      const value = inputFirebaseConfig.value.trim();
-      if (!value) return;
-
-      try {
-        JSON.parse(value);
-        localStorage.setItem('art_firebase_config', value);
-        customAlert("설정 적용 완료", "파이어베이스 클라우드 자격 증명이 저장되었습니다. 사이트를 다시 불러옵니다.", "success", () => {
-          window.location.reload();
-        });
-      } catch (err) {
-        customAlert("형식 오류", "정상적인 JSON 설정 객체가 아닙니다. 구글 콘솔에서 올바른 형식을 복사해 오세요.", "error");
       }
-    };
 
-    btnResetFirebase.onclick = () => {
-      localStorage.removeItem('art_firebase_config');
-      customAlert("해제 완료", "클라우드 서비스 연결이 해제되었습니다.", "success", () => {
-        window.location.reload();
-      });
-    };
-
-    btnExportBackup.onclick = () => {
-      if (playlist.length === 0) {
-        customAlert("백업 대상 없음", "내보낼 작품 리스트가 비어 있습니다.", "error");
-        return;
-      }
-      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(playlist, null, 2));
-      const downloadAnchor = document.createElement('a');
-      downloadAnchor.setAttribute("href", dataStr);
-      downloadAnchor.setAttribute("download", `우리반_미디어아트_전시관_백업_${new Date().toISOString().slice(0,10)}.json`);
-      document.body.appendChild(downloadAnchor);
-      downloadAnchor.click();
-      downloadAnchor.remove();
-    };
-
-    inputImportBackup.onchange = (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
-
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        try {
-          const imported = JSON.parse(event.target.result);
-          if (Array.isArray(imported)) {
-            playlist = [...imported, ...playlist];
-            saveToLocalStorage();
-            renderPlaylist();
-            playArtwork(0);
-            customAlert("백업 불러오기 완료", `성공적으로 ${imported.length}개의 작품이 전시관에 추가 탑재되었습니다!`);
-            settingsModal.classList.add('hidden');
-            settingsModal.classList.remove('flex');
-          } else {
-            customAlert("양식 불일치", "올바른 미디어 아트 전시 백업 형식이 아닙니다.", "error");
-          }
-        } catch (err) {
-          customAlert("파싱 오류", "파일을 읽어들이는 도중 에러가 생겼습니다.", "error");
-        }
-      };
-      reader.readAsText(file);
-    };
+      // 5. Run timer loop
+      startTimer();
+    });
   </script>
 </body>
 </html>
