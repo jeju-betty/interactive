@@ -9,7 +9,7 @@
   <!-- FontAwesome Icons for clean UI symbols -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <!-- Google Fonts Inter for readability -->
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght=300;400;500;600;700&display=swap" rel="stylesheet">
   <!-- Firebase Compatibility SDKs -->
   <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
@@ -40,7 +40,7 @@
 
   <div class="flex-1 flex w-full h-full relative overflow-hidden">
     
-    <!-- LEFT SIDEBAR: Controls and artwork listings (White Theme) -->
+    <!-- LEFT SIDEBAR: Controls and artwork listings (White Theme with Settings button removed) -->
     <aside id="sidebar-panel" class="w-80 h-full bg-white border-r border-slate-200 flex flex-col transition-transform duration-300 z-20 shrink-0 relative">
       <!-- Sidebar Header -->
       <div class="p-5 border-b border-slate-100 flex items-center justify-between">
@@ -63,8 +63,9 @@
             <button id="btn-prev" class="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 flex items-center justify-center transition-all text-slate-600" title="이전 작품">
               <i class="fa-solid fa-backward text-xs"></i>
             </button>
-            <button id="btn-play-pause" class="w-10 h-10 rounded-lg bg-indigo-600 hover:bg-indigo-500 flex items-center justify-center transition-all text-white shadow-md shadow-indigo-600/10" title="재생/일시정지">
-              <i id="play-pause-icon" class="fa-solid fa-pause text-sm"></i>
+            <button id="btn-play-pause" class="w-10 h-10 rounded-lg bg-slate-100 hover:bg-slate-200 flex items-center justify-center transition-all text-slate-600" title="재생/일시정지">
+              <!-- Autoplay starts FALSE, so we display PLAY icon initially -->
+              <i id="play-pause-icon" class="fa-solid fa-play text-sm"></i>
             </button>
             <button id="btn-next" class="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 flex items-center justify-center transition-all text-slate-600" title="다음 작품">
               <i class="fa-solid fa-forward text-xs"></i>
@@ -98,25 +99,22 @@
         <button id="btn-open-studio" class="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/10 hover:shadow-indigo-600/20 transition-all duration-200 transform hover:-translate-y-0.5">
           <i class="fa-solid fa-cloud-arrow-up"></i>새 작품 파일(.html) 올리기
         </button>
-        <button id="btn-projector-mode" class="w-full py-2 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs flex items-center justify-center gap-2 transition-all">
-          <i class="fa-solid fa-display"></i>프로젝터 전시 모드
-        </button>
-        <button id="btn-open-settings" class="w-full py-2 px-4 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-slate-500 hover:text-slate-700 font-medium text-[11px] flex items-center justify-center gap-1.5 transition-all">
-          <i class="fa-solid fa-gear"></i>전시관 설정 및 백업
+        <button id="btn-projector-mode" class="w-full py-2 px-4 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-100 font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-sm">
+          <i class="fa-solid fa-expand"></i>프로젝터 전시 모드
         </button>
       </div>
     </aside>
 
     <!-- RIGHT VIEWPORT: Running artwork and overlays (Light theme container) -->
     <main class="flex-1 h-full relative bg-slate-100 flex flex-col">
-      <!-- Top Floating Bar (Shows when projection mode is active so user can exit) -->
+      <!-- Top Floating Bar (Exit projection mode) -->
       <button id="btn-exit-projector" class="absolute top-4 right-4 px-4 py-2 bg-white/95 backdrop-blur border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-xl text-xs font-bold items-center gap-2 shadow-2xl transition-all duration-300 z-30 hidden">
         <i class="fa-solid fa-compress"></i>전시 모드 종료하기
       </button>
 
       <!-- Main Artwork Canvas/IFrame View -->
       <div class="flex-1 w-full h-full relative overflow-hidden">
-        <iframe id="art-iframe" class="w-full h-full border-none bg-slate-100 transition-opacity duration-500" sandbox="allow-scripts allow-same-origin allow-modals"></iframe>
+        <iframe id="art-iframe" class="w-full h-full border-none bg-black transition-opacity duration-500" sandbox="allow-scripts allow-same-origin allow-modals"></iframe>
         
         <!-- Elegant White Blank/Empty Screen Overlay -->
         <div id="empty-state" class="absolute inset-0 bg-slate-50 flex flex-col items-center justify-center p-6 text-center z-10">
@@ -134,7 +132,7 @@
         </div>
 
         <!-- Float Info Panel in Lower-Left Corner (White glassmorphism) -->
-        <div id="art-info-panel" class="absolute bottom-6 left-6 max-w-sm bg-white/95 backdrop-blur-md border border-slate-200/80 rounded-2xl p-4 shadow-2xl transition-all duration-300 z-10 pointer-events-none opacity-0 translate-y-2">
+        <div id="art-info-panel" class="absolute bottom-6 left-6 max-w-sm bg-white/90 backdrop-blur-md border border-slate-200/80 rounded-2xl p-4 shadow-2xl transition-all duration-300 z-10 pointer-events-none opacity-0 translate-y-2">
           <div class="flex items-center gap-3">
             <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-500 to-purple-500 flex items-center justify-center text-white font-bold shrink-0 shadow-md">
               <i class="fa-solid fa-signature"></i>
@@ -244,40 +242,6 @@
     </main>
   </div>
 
-  <!-- SETTINGS MODAL: Configure Firebase connection and general backups (White Style) -->
-  <div id="settings-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-white border border-slate-200 rounded-2xl max-w-lg w-full overflow-hidden shadow-2xl flex flex-col">
-      <header class="p-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
-        <div class="flex items-center gap-2 text-slate-800 font-bold text-sm">
-          <i class="fa-solid fa-gear text-indigo-500"></i>전시관 설정 및 백업
-        </div>
-        <button id="btn-close-settings" class="w-8 h-8 rounded-lg hover:bg-slate-100 flex items-center justify-center text-slate-400 hover:text-slate-600 transition-colors">
-          <i class="fa-solid fa-xmark"></i>
-        </button>
-      </header>
-      <div class="p-5 space-y-4 text-xs">
-        <div>
-          <label class="block font-bold text-slate-700 mb-1">학급 실시간 공용 클라우드 연결 (Firebase)</label>
-          <p class="text-[10px] text-slate-400 mb-2 leading-relaxed">
-            Firebase 콘솔의 웹 SDK 설정 코드 블록(<code class="text-indigo-600">firebaseConfig</code>) 전체를 아래에 복사해 붙여넣으세요. 스마트 엔진이 괄호 안의 데이터만 자동으로 추출해 냅니다.
-          </p>
-          <textarea id="firebase-config-input" class="w-full h-40 bg-slate-50 text-slate-700 font-mono text-[10px] p-3 rounded-lg border border-slate-200 focus:outline-none focus:border-indigo-500" placeholder="const firebaseConfig = {&#10;  apiKey: '...',&#10;  authDomain: '...',&#10;  projectId: '...'&#10;};"></textarea>
-        </div>
-
-        <div class="flex justify-between items-center gap-4 border-t border-slate-200 pt-3">
-          <button id="btn-clear-local" class="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 rounded-lg font-bold text-[10px] transition-all">
-            <i class="fa-solid fa-trash-can mr-1"></i>기기 보관함 전체 삭제
-          </button>
-          <div class="flex gap-2">
-            <button id="btn-save-settings" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-lg transition-all">
-              클라우드 연결 설정 저장
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
   <!-- DRAG OVERLAY: Full-screen dropzone visual aid (Light overlay) -->
   <div id="drag-overlay" class="fixed inset-0 bg-indigo-50/90 backdrop-blur-sm border-4 border-dashed border-indigo-400 flex flex-col items-center justify-center z-50 hidden pointer-events-none transition-all">
     <div class="w-16 h-16 rounded-full bg-indigo-600 flex items-center justify-center text-white mb-4 animate-bounce">
@@ -294,14 +258,30 @@
     /* Global Application State variables */
     let playlist = [];
     let currentIndex = 0;
-    let autoPlay = true;
+    let autoPlay = false; 
     let timerInterval = null;
-    let PLAY_DURATION = 10000; // default 10s
+    let PLAY_DURATION = 10000; 
     let isProjectionMode = false;
-    let db = null; // Cloud DB Reference (Firebase Firestore)
+    let db = null; 
     
     // File upload data buffer
     let studioUploadedFileContent = "";
+
+    // =========================================================================
+    // [선생님 전용 초간단 자동 연동 설정 필드 ⭐]
+    // 아래 null 자리에 파이어베이스의 Config 객체 { ... } 를 통째로 복사해두면,
+    // 학생들이 어떤 디바이스나 브라우저로 접속하든 자동으로 실시간 연결이 작동합니다!
+    // =========================================================================
+    const HARDCODED_FIREBASE_CONFIG = {
+  apiKey: "AIzaSyBtFCkd1B1R4_uHkuGsaOJwa6Iwc3Bs5FE",
+  authDomain: "interactive-44aca.firebaseapp.com",
+  projectId: "interactive-44aca",
+  storageBucket: "interactive-44aca.firebasestorage.app",
+  messagingSenderId: "751108708342",
+  appId: "1:751108708342:web:0c26ccc9a4df42a44119d7",
+  measurementId: "G-B0LE7C36M0"
+};
+
 
     // DOM Elements Cache
     const sidebarPanel = document.getElementById('sidebar-panel');
@@ -330,13 +310,6 @@
 
     const btnSaveLocal = document.getElementById('btn-save-local');
     const btnSaveCloud = document.getElementById('btn-save-cloud');
-
-    const btnOpenSettings = document.getElementById('btn-open-settings');
-    const btnCloseSettings = document.getElementById('btn-close-settings');
-    const settingsModal = document.getElementById('settings-modal');
-    const firebaseConfigInput = document.getElementById('firebase-config-input');
-    const btnSaveSettings = document.getElementById('btn-save-settings');
-    const btnClearLocal = document.getElementById('btn-clear-local');
 
     const btnProjectorMode = document.getElementById('btn-projector-mode');
     const btnExitProjector = document.getElementById('btn-exit-projector');
@@ -367,66 +340,76 @@
       }, 3000);
     }
 
-    /* Helper: Robust Custom Parser to grab JSON out of Javascript blocks */
-    function parseFirebaseConfig(rawText) {
-      if (!rawText || rawText.trim() === '') return null;
-      try {
-        return JSON.parse(rawText.trim());
-      } catch (e) {
-        const braceMatch = rawText.match(/\{[\s\S]*\}/);
-        if (braceMatch) {
-          const content = braceMatch[0];
-          // Replace single quotes with double quotes and format properties safely
-          let jsonStr = content
-            .replace(/'/g, '"')
-            .replace(/([a-zA-Z0-9_]+)\s*:/g, '"$1":')
-            .replace(/,\s*([\]}])/g, '$1');
-          try {
-            return JSON.parse(jsonStr);
-          } catch (e2) {
-            const config = {};
-            const keys = ['apiKey', 'authDomain', 'projectId', 'storageBucket', 'messagingSenderId', 'appId', 'measurementId'];
-            keys.forEach(key => {
-              const regex = new RegExp(`['"]?${key}['"]?\\s*:\\s*['"]([^'"]+)['"]`);
-              const match = rawText.match(regex);
-              if (match && match[1]) {
-                config[key] = match[1];
-              }
-            });
-            if (config.apiKey && config.projectId) {
-              return config;
-            }
-          }
-        }
-      }
-      return null;
-    }
-
-    /* Set and Memorize Exhibition Mode State */
+    /* Set and Memorize Exhibition Mode State (Native Fullscreen Integration) */
     function setProjectorMode(enable) {
       isProjectionMode = enable;
       localStorage.setItem('art_projector_mode', enable ? 'true' : 'false');
       if (enable) {
-        sidebarPanel.classList.add('-translate-x-full', 'absolute');
+        sidebarPanel.classList.add('-translate-x-full', 'absolute', 'hidden');
         btnExitProjector.classList.remove('hidden');
         btnExitProjector.classList.add('flex');
         artInfoPanel.classList.add('scale-105', 'translate-x-3');
+
+        try {
+          if (document.documentElement.requestFullscreen) {
+            document.documentElement.requestFullscreen();
+          } else if (document.documentElement.webkitRequestFullscreen) {
+            document.documentElement.webkitRequestFullscreen();
+          } else if (document.documentElement.msRequestFullscreen) {
+            document.documentElement.msRequestFullscreen();
+          }
+        } catch (err) {
+          console.warn("Fullscreen request skipped by sandboxed container limits", err);
+        }
       } else {
-        sidebarPanel.classList.remove('-translate-x-full', 'absolute');
+        sidebarPanel.classList.remove('-translate-x-full', 'absolute', 'hidden');
         btnExitProjector.classList.add('hidden');
         btnExitProjector.classList.remove('flex');
         artInfoPanel.classList.remove('scale-105', 'translate-x-3');
+
+        try {
+          if (document.fullscreenElement) {
+            if (document.exitFullscreen) {
+              document.exitFullscreen();
+            } else if (document.webkitExitFullscreen) {
+              document.webkitExitFullscreen();
+            } else if (document.msExitFullscreen) {
+              document.msExitFullscreen();
+            }
+          }
+        } catch (err) {
+          console.warn("Exit fullscreen failed or skipped", err);
+        }
       }
     }
 
-    /* Initialize Firebase with Local Config Storage */
+    // Monitor Esc key presses exiting fullscreen
+    document.addEventListener('fullscreenchange', () => {
+      if (!document.fullscreenElement && isProjectionMode) {
+        setProjectorMode(false);
+      }
+    });
+
+    /* Initialize Firebase with Hardcoded Config Priority */
     function initFirebase() {
-      const savedConfig = localStorage.getItem('class_art_fb_config');
-      if (!savedConfig) return;
+      let config = null;
+
+      // 1. 코드 내장 설정값(HARDCODED_FIREBASE_CONFIG)이 있는지 먼저 검사합니다.
+      if (HARDCODED_FIREBASE_CONFIG && typeof HARDCODED_FIREBASE_CONFIG === 'object' && HARDCODED_FIREBASE_CONFIG.apiKey) {
+        config = HARDCODED_FIREBASE_CONFIG;
+        console.log("Using hardcoded Firebase Configuration.");
+      } else {
+        // 2. 내장값이 없으면 기존처럼 브라우저의 로컬 임시 보관소에서 불러옵니다.
+        const savedConfig = localStorage.getItem('class_art_fb_config');
+        if (savedConfig) {
+          config = JSON.parse(savedConfig);
+          console.log("Using browser storage Firebase Configuration.");
+        }
+      }
+
+      if (!config) return;
 
       try {
-        const config = JSON.parse(savedConfig);
-        // Avoid duplicate initialization
         if (firebase.apps.length === 0) {
           firebase.initializeApp(config);
         }
@@ -441,7 +424,7 @@
           })
           .catch((error) => {
             console.error("Firebase Auth Error", error);
-            showToast("실시간 클라우드 로그인에 실패했습니다. 규칙을 확인하세요.", "error");
+            showToast("실시간 클라우드 로그인에 실패했습니다.", "error");
           });
       } catch (err) {
         console.error("Firebase Init Error", err);
@@ -466,16 +449,13 @@
           });
         });
 
-        // Load local ones and merge
         const localSaved = localStorage.getItem('class_art_local_playlist');
         let localList = localSaved ? JSON.parse(localSaved) : [];
 
-        // Combine (Cloud takes precedence or merges gracefully)
         playlist = [...cloudList, ...localList];
         
         renderPlaylist();
         
-        // Auto-play first item if not playing yet
         if (playlist.length > 0 && artIframe.src === "") {
           playArtwork(0);
         }
@@ -541,7 +521,6 @@
     function playArtwork(index) {
       if (playlist.length === 0) return;
       
-      // Boundaries check
       if (index < 0) index = playlist.length - 1;
       if (index >= playlist.length) index = 0;
 
@@ -550,17 +529,14 @@
 
       const item = playlist[currentIndex];
       
-      // Update Lower-Left Corner Panel
       artInfoTitle.textContent = item.title;
       artInfoCreator.textContent = `🧑‍🎨 ${item.creator}`;
       artInfoPanel.classList.remove('opacity-0', 'translate-y-2');
       artInfoPanel.classList.add('opacity-100', 'translate-y-0');
 
-      // Seamless Transition: Fade iframe briefly
       artIframe.style.opacity = "0.2";
       
       setTimeout(() => {
-        // Construct Sandbox Safe URL Context for internal Javascript
         if (artIframe.src) {
           URL.revokeObjectURL(artIframe.src);
         }
@@ -579,7 +555,6 @@
       }
     }
 
-    /* Next / Previous handlers */
     function nextArtwork() {
       playArtwork(currentIndex + 1);
     }
@@ -588,9 +563,9 @@
       playArtwork(currentIndex - 1);
     }
 
-    /* Auto Play Timer configurations */
     function startTimer() {
       clearInterval(timerInterval);
+      if (!autoPlay) return; 
       timerInterval = setInterval(() => {
         if (autoPlay && playlist.length > 0) {
           nextArtwork();
@@ -606,16 +581,17 @@
       autoPlay = !autoPlay;
       if (autoPlay) {
         playPauseIcon.className = "fa-solid fa-pause text-sm";
+        btnPlayPause.className = "w-10 h-10 rounded-lg bg-indigo-600 hover:bg-indigo-500 flex items-center justify-center transition-all text-white shadow-md shadow-indigo-600/10";
         resetTimer();
         showToast("자동 상영 재생 시작");
       } else {
         playPauseIcon.className = "fa-solid fa-play text-sm";
+        btnPlayPause.className = "w-10 h-10 rounded-lg bg-slate-100 hover:bg-slate-200 flex items-center justify-center transition-all text-slate-600";
         clearInterval(timerInterval);
         showToast("자동 상영 일시 중지");
       }
     }
 
-    /* Modal state switches */
     function enterStudio() {
       studioModal.classList.remove('hidden');
       studioModal.classList.add('flex');
@@ -631,7 +607,6 @@
       studioModal.classList.remove('flex');
     }
 
-    /* Handle visual Studio preview changes */
     function updateStudioPreview(htmlContent) {
       studioUploadedFileContent = htmlContent;
       studioPreviewPlaceholder.classList.add('hidden');
@@ -641,7 +616,6 @@
       studioPreviewIframe.src = previewUrl;
     }
 
-    /* Common parser helper to decode HTML text file loading */
     function loadFileText(file, callback) {
       const reader = new FileReader();
       reader.onload = (e) => {
@@ -650,7 +624,6 @@
       reader.readAsText(file);
     }
 
-    /* Drag & Drop handling logic */
     function bindDragAndDrop(element, onLoaded) {
       element.ondragover = (e) => {
         e.preventDefault();
@@ -668,7 +641,6 @@
       };
     }
 
-    // Bind Screen-Wide Drag and Drop for Direct fast Upload
     window.ondragenter = (e) => {
       e.preventDefault();
       dragOverlay.classList.remove('hidden');
@@ -695,7 +667,6 @@
       }
     };
 
-    // Bind Studio Dropzone
     bindDragAndDrop(studioDropzone, (fileName, content) => {
       studioTitleInput.value = fileName;
       updateStudioPreview(content);
@@ -714,7 +685,6 @@
     };
     studioDropzone.onclick = () => studioFileInput.click();
 
-    /* Save local logic */
     btnSaveLocal.onclick = () => {
       const title = studioTitleInput.value.trim() || "무제 작품";
       const creator = studioCreatorInput.value.trim() || "우리 반 작가";
@@ -724,7 +694,6 @@
         return;
       }
 
-      // Load current local ones
       const localSaved = localStorage.getItem('class_art_local_playlist');
       let localList = localSaved ? JSON.parse(localSaved) : [];
 
@@ -740,9 +709,8 @@
       localList.unshift(newArt);
       saveLocalPlaylistToStorage(localList);
 
-      // Re-merge with Cloud list (if exists) and play
       if (db) {
-        // Sync triggers reload automatically. Just leave.
+        // Firestore sync handles dynamically
       } else {
         playlist = [...localList];
         renderPlaylist();
@@ -750,10 +718,9 @@
       }
 
       leaveStudio();
-      showToast("로컬 보관함 등록 성공 및 즉시 상영!");
+      showToast("보관함에 등록 성공 및 자동 상영 대기!");
     };
 
-    /* Save cloud logic */
     btnSaveCloud.onclick = () => {
       const title = studioTitleInput.value.trim() || "무제 작품";
       const creator = studioCreatorInput.value.trim() || "우리 반 작가";
@@ -764,7 +731,7 @@
       }
 
       if (!db) {
-        showToast("연결된 공용 클라우드가 없습니다. 하단 설정을 먼저 완료해 주세요.", "error");
+        showToast("연결된 공용 클라우드가 없습니다. 소스코드를 열어 파이어베이스를 입력해 주세요.", "error");
         return;
       }
 
@@ -780,53 +747,10 @@
       })
       .catch((error) => {
         console.error("Cloud upload error", error);
-        showToast("업로드 권한이 없거나 오류가 발생했습니다.", "error");
+        showToast("업로드 오류가 발생했습니다.", "error");
       });
     };
 
-    /* Settings Modal and Firebase config parser logic */
-    btnOpenSettings.onclick = () => {
-      const saved = localStorage.getItem('class_art_fb_config');
-      if (saved) {
-        firebaseConfigInput.value = JSON.stringify(JSON.parse(saved), null, 2);
-      } else {
-        firebaseConfigInput.value = "";
-      }
-      settingsModal.classList.remove('hidden');
-    };
-
-    btnCloseSettings.onclick = () => {
-      settingsModal.classList.add('hidden');
-    };
-
-    btnSaveSettings.onclick = () => {
-      const rawInput = firebaseConfigInput.value;
-      const parsed = parseFirebaseConfig(rawInput);
-
-      if (!parsed) {
-        showToast("올바른 Firebase 형식 데이터를 인식할 수 없습니다. 확인해 주세요.", "error");
-        return;
-      }
-
-      localStorage.setItem('class_art_fb_config', JSON.stringify(parsed));
-      showToast("설정 적용 완료! 전시관을 재시동합니다.");
-      settingsModal.classList.add('hidden');
-
-      setTimeout(() => {
-        window.location.reload();
-      }, 1000);
-    };
-
-    /* Reset Storage button */
-    btnClearLocal.onclick = () => {
-      if (confirm("정말로 이 컴퓨터 기기에 저장된 모든 로컬 작품들을 완전히 삭제하시겠습니까? (클라우드 작품은 안전하게 유지됩니다)")) {
-        localStorage.removeItem('class_art_local_playlist');
-        showToast("로컬 보관함이 완전히 비워졌습니다.");
-        setTimeout(() => window.location.reload(), 1000);
-      }
-    };
-
-    /* Sidebar controls */
     btnPlayPause.onclick = togglePlayPause;
     btnNext.onclick = nextArtwork;
     btnPrev.onclick = prevArtwork;
@@ -836,20 +760,16 @@
       if (autoPlay) resetTimer();
     };
 
-    /* Exhibition Viewport State triggers */
     btnProjectorMode.onclick = () => setProjectorMode(true);
     btnExitProjector.onclick = () => setProjectorMode(false);
     btnOpenStudio.onclick = enterStudio;
     btnCloseStudio.onclick = leaveStudio;
 
-    /* Mobile drawer trigger */
     btnMobileTrigger.onclick = () => {
       sidebarPanel.classList.toggle('-translate-x-full');
     };
 
-    /* App mounting sequence */
     window.addEventListener('load', () => {
-      // 1. Restore Projector/Exhibition state immediately to prevent layout shifts!
       const savedMode = localStorage.getItem('art_projector_mode');
       if (savedMode === 'true') {
         setProjectorMode(true);
@@ -857,22 +777,16 @@
         setProjectorMode(false);
       }
 
-      // 2. Load Local artifacts
       const localSaved = localStorage.getItem('class_art_local_playlist');
       let localList = localSaved ? JSON.parse(localSaved) : [];
       playlist = [...localList];
 
-      // 3. Setup Firebase
       initFirebase();
 
-      // 4. Initial rendering
       renderPlaylist();
       if (playlist.length > 0) {
         playArtwork(0);
       }
-
-      // 5. Run timer loop
-      startTimer();
     });
   </script>
 </body>
