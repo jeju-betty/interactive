@@ -19,7 +19,7 @@
     body {
       font-family: 'Inter', sans-serif;
     }
-    /* Hide scrollbars for slick application feeling */
+    /* Custom scrollbars */
     ::-webkit-scrollbar {
       width: 6px;
       height: 6px;
@@ -35,10 +35,10 @@
       background: #94a3b8;
     }
 
-    /* Miniature thumbnail iframe transformation */
+    /* Thumbnail iframe transformation */
     .thumb-iframe-container {
-      width: 56px;
-      height: 40px;
+      width: 80px;
+      height: 52px;
       position: relative;
       overflow: hidden;
       border-radius: 0.5rem;
@@ -46,54 +46,67 @@
       flex-shrink: 0;
     }
     .thumb-iframe {
-      width: 280px;
-      height: 200px;
+      width: 320px;
+      height: 208px;
       border: none;
       pointer-events: none;
-      transform: scale(0.2);
+      transform: scale(0.25);
       transform-origin: 0 0;
     }
   </style>
 </head>
 <body class="bg-slate-50 text-slate-800 w-screen h-screen overflow-hidden flex flex-col select-none">
 
-  <div class="flex-1 flex w-full h-full relative overflow-hidden">
+  <!-- MAIN WRAPPER: Left Sidebar (Thumbnails, Likes & Comments) + Right Viewport (Player) -->
+  <div class="flex-1 flex w-full h-full relative overflow-hidden flex-col md:flex-row">
     
-    <!-- LEFT SIDEBAR: Controls and artwork listings (White Theme) -->
-    <aside id="sidebar-panel" class="w-80 h-full bg-white border-r border-slate-200 flex flex-col transition-transform duration-300 z-20 shrink-0 relative">
+    <!-- LEFT SIDEBAR: Thumbnails, Controls, Comments & Interactions -->
+    <aside id="sidebar-panel" class="w-full md:w-96 h-full bg-white border-r border-slate-200 flex flex-col transition-transform duration-300 z-20 shrink-0 relative order-2 md:order-1">
+      
       <!-- Sidebar Header -->
-      <div class="p-5 border-b border-slate-100 flex items-center justify-between">
+      <div class="p-4 border-b border-slate-100 flex items-center justify-between bg-white shrink-0">
         <div class="flex items-center gap-2.5">
           <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-indigo-500 to-purple-500 flex items-center justify-center shadow-lg shadow-indigo-500/20">
             <i class="fa-solid fa-wand-magic-sparkles text-white text-sm"></i>
           </div>
           <div>
             <h1 class="font-bold text-sm leading-tight text-slate-800">우리 반 전시관</h1>
-            <p class="text-[10px] text-indigo-600 font-semibold tracking-wider uppercase">Classroom Media Art</p>
+            <p class="text-[10px] text-indigo-600 font-semibold tracking-wider uppercase">Media Art Gallery</p>
           </div>
+        </div>
+        
+        <!-- Tab Navigation (Playlists vs Comments) -->
+        <div class="flex items-center bg-slate-100 p-1 rounded-xl text-xs font-semibold">
+          <button id="tab-btn-playlist" class="px-3 py-1 rounded-lg bg-white text-indigo-600 shadow-sm transition-all">작품 썸네일</button>
+          <button id="tab-btn-comments" class="px-3 py-1 rounded-lg text-slate-500 hover:text-slate-800 transition-all flex items-center gap-1">
+            <span>댓글</span>
+            <span id="badge-comments-count" class="px-1.5 py-0.2 bg-indigo-100 text-indigo-700 text-[9px] rounded-full font-bold">0</span>
+          </button>
         </div>
       </div>
 
-      <!-- Controls Section -->
-      <div class="p-4 bg-slate-50/50 border-b border-slate-100 space-y-3.5">
+      <!-- Controls Bar -->
+      <div class="p-3.5 bg-slate-50/80 border-b border-slate-100 space-y-2.5 shrink-0">
         <div class="flex items-center justify-between">
-          <span class="text-xs text-slate-500 font-medium">재생 제어</span>
+          <span class="text-xs text-slate-500 font-medium flex items-center gap-1">
+            <i class="fa-solid fa-sliders text-indigo-500 text-[10px]"></i> 상영 제어
+          </span>
           <div class="flex items-center gap-1.5">
-            <button id="btn-prev" class="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 flex items-center justify-center transition-all text-slate-600" title="이전 작품">
+            <button id="btn-prev" class="w-8 h-8 rounded-lg bg-white border border-slate-200 hover:bg-slate-100 flex items-center justify-center transition-all text-slate-600" title="이전 작품">
               <i class="fa-solid fa-backward text-xs"></i>
             </button>
-            <button id="btn-play-pause" class="w-10 h-10 rounded-lg bg-slate-100 hover:bg-slate-200 flex items-center justify-center transition-all text-slate-600" title="재생/일시정지">
+            <button id="btn-play-pause" class="w-9 h-9 rounded-lg bg-slate-100 hover:bg-slate-200 flex items-center justify-center transition-all text-slate-600" title="재생/일시정지">
               <i id="play-pause-icon" class="fa-solid fa-play text-sm"></i>
             </button>
-            <button id="btn-next" class="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 flex items-center justify-center transition-all text-slate-600" title="다음 작품">
+            <button id="btn-next" class="w-8 h-8 rounded-lg bg-white border border-slate-200 hover:bg-slate-100 flex items-center justify-center transition-all text-slate-600" title="다음 작품">
               <i class="fa-solid fa-forward text-xs"></i>
             </button>
           </div>
         </div>
 
         <div class="flex items-center justify-between text-xs">
-          <span class="text-slate-500">자동 전환 시간</span>
-          <select id="select-duration" class="bg-white border border-slate-200 rounded px-2 py-1 text-slate-700 outline-none focus:border-indigo-500 text-xs cursor-pointer">
+          <span class="text-slate-500 text-[11px]">자동 전환 시간</span>
+          <select id="select-duration" class="bg-white border border-slate-200 rounded-lg px-2 py-1 text-slate-700 outline-none focus:border-indigo-500 text-xs cursor-pointer">
             <option value="5000">5초</option>
             <option value="10000" selected>10초</option>
             <option value="20000">20초</option>
@@ -102,31 +115,65 @@
         </div>
       </div>
 
-      <!-- Artwork List Container -->
-      <div class="flex-1 overflow-y-auto p-4 space-y-2.5">
-        <h2 class="text-xs font-bold text-slate-400 tracking-wider uppercase mb-1 flex items-center gap-1.5">
-          <i class="fa-solid fa-images text-[10px]"></i>상영 목록
-        </h2>
-        <div id="playlist-container" class="space-y-2">
-          <!-- Dynamically populated with thumbnails, likes, and titles -->
+      <!-- VIEW 1: THUMBNAILS & PLAYLIST CONTAINER -->
+      <div id="view-playlist" class="flex-1 overflow-y-auto p-3.5 space-y-3">
+        <div class="flex items-center justify-between mb-1">
+          <h2 class="text-[11px] font-bold text-slate-400 tracking-wider uppercase flex items-center gap-1.5">
+            <i class="fa-solid fa-border-all text-[10px]"></i>작품 썸네일 목록
+          </h2>
+          <span id="playlist-count-badge" class="text-[10px] text-indigo-600 font-bold bg-indigo-50 px-2 py-0.5 rounded-md">0개 작품</span>
+        </div>
+        
+        <div id="playlist-container" class="space-y-3">
+          <!-- Dynamically populated with artworks -->
+        </div>
+      </div>
+
+      <!-- VIEW 2: COMMENTS & INSTRUCTIONS PANEL -->
+      <div id="view-comments" class="flex-1 overflow-y-auto hidden flex-col bg-slate-50/50">
+        <!-- Instructions Section -->
+        <div class="p-3.5 bg-indigo-50/80 border-b border-indigo-100 shrink-0">
+          <h4 class="text-[11px] font-bold text-indigo-700 uppercase tracking-wider mb-1 flex items-center gap-1.5">
+            <i class="fa-solid fa-circle-info"></i>작품 작동방법 및 설명
+          </h4>
+          <p id="drawer-instructions-text" class="text-xs text-slate-700 leading-relaxed font-normal">
+            선택된 작품이 없거나 설명이 등록되지 않았습니다.
+          </p>
+        </div>
+
+        <!-- Comment Messages Stream -->
+        <div id="comments-list-container" class="flex-1 overflow-y-auto p-3.5 space-y-2.5">
+          <p class="text-xs text-slate-400 text-center py-8">아직 등록된 댓글이 없습니다.<br>첫 감상평을 남겨보세요!</p>
+        </div>
+
+        <!-- Comment Input Box -->
+        <div class="p-3 border-t border-slate-200 bg-white space-y-2 shrink-0">
+          <div class="flex items-center gap-2">
+            <input type="text" id="comment-author-input" class="w-1/3 bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs text-slate-800 focus:outline-none focus:border-indigo-500" placeholder="이름 (예: 하늘)">
+            <input type="text" id="comment-text-input" class="flex-1 bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs text-slate-800 focus:outline-none focus:border-indigo-500" placeholder="작품 감상평이나 질문 남기기...">
+          </div>
+          <button id="btn-submit-comment" class="w-full py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-sm">
+            <i class="fa-solid fa-paper-plane text-xs"></i>댓글 등록하기
+          </button>
         </div>
       </div>
 
       <!-- Action Buttons Area -->
-      <div class="p-4 border-t border-slate-100 bg-slate-50/50 space-y-2">
+      <div class="p-3.5 border-t border-slate-100 bg-slate-50/50 space-y-2 shrink-0">
         <button id="btn-open-studio" class="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/10 hover:shadow-indigo-600/20 transition-all duration-200 transform hover:-translate-y-0.5">
           <i class="fa-solid fa-cloud-arrow-up"></i>새 작품 파일(.html) 올리기
         </button>
-        <button id="btn-projector-mode" class="w-full py-2 px-4 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-100 font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-sm">
+        <button id="btn-projector-mode" class="w-full py-2 px-4 rounded-xl bg-white hover:bg-indigo-50 text-indigo-700 border border-indigo-100 font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-sm">
           <i class="fa-solid fa-expand"></i>프로젝터 전시 모드
         </button>
       </div>
     </aside>
 
-    <!-- RIGHT VIEWPORT: Running artwork and overlays (Light theme container) -->
-    <main class="flex-1 h-full relative bg-slate-100 flex flex-col">
-      <!-- Top Floating Bar (Exit projection mode) -->
-      <button id="btn-exit-projector" class="absolute top-4 right-4 px-4 py-2 bg-white/95 backdrop-blur border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-xl text-xs font-bold items-center gap-2 shadow-2xl transition-all duration-300 z-30 hidden">
+    <!-- RIGHT MAIN VIEWPORT: Large Artwork Display & Stage -->
+    <main class="flex-1 h-full relative bg-slate-900 flex flex-col order-1 md:order-2 overflow-hidden">
+      
+      <!-- Exit Projection Mode Button -->
+      <button id="btn-exit-projector" class="absolute top-4 left-4 px-4 py-2 bg-white/90 backdrop-blur border border-slate-200 hover:bg-white text-slate-800 rounded-xl text-xs font-bold items-center gap-2 shadow-2xl transition-all duration-300 z-30 hidden">
         <i class="fa-solid fa-compress"></i>전시 모드 종료하기
       </button>
 
@@ -134,7 +181,7 @@
       <div class="flex-1 w-full h-full relative overflow-hidden">
         <iframe id="art-iframe" class="w-full h-full border-none bg-black transition-opacity duration-500" sandbox="allow-scripts allow-same-origin allow-modals"></iframe>
         
-        <!-- Elegant White Blank/Empty Screen Overlay -->
+        <!-- Empty State Overlay -->
         <div id="empty-state" class="absolute inset-0 bg-slate-50 flex flex-col items-center justify-center p-6 text-center z-10">
           <div class="w-20 h-20 rounded-full bg-white border border-slate-200 flex items-center justify-center mb-6 shadow-sm">
             <i class="fa-solid fa-film text-3xl text-indigo-500 animate-pulse"></i>
@@ -142,14 +189,15 @@
           <h3 class="text-xl font-bold text-slate-800 mb-2">우리 반 미디어 아트 전시관</h3>
           <p class="text-sm text-slate-500 max-w-sm leading-relaxed mb-6">
             현재 상영 대기 중입니다.<br>
-            마우스로 <span class="text-indigo-600 font-bold">.html 파일</span>을 이 화면에 그냥 던져 놓으시거나 왼쪽 올리기 버튼을 통해 등록해 주세요!
+            왼쪽 메뉴의 <span class="text-indigo-600 font-bold">.html 올리기</span> 버튼을 누르거나,<br>
+            화면에 파일(.html)을 그대로 끌어다 놓아보세요!
           </p>
           <div class="px-4 py-2 rounded-lg bg-indigo-50 border border-indigo-100 text-[11px] text-indigo-600 font-semibold flex items-center gap-2">
             <i class="fa-solid fa-arrows-to-eye"></i>화면 전체가 드롭존입니다
           </div>
         </div>
 
-        <!-- Float Info Panel in Lower-Left Corner (Dark Glassmorphism) -->
+        <!-- Float Info Panel in Lower-Left Corner (Glassmorphism) -->
         <div id="art-info-panel" class="absolute bottom-6 left-6 max-w-md bg-slate-900/85 backdrop-blur-md border border-white/10 rounded-2xl p-4 shadow-2xl transition-all duration-500 z-20 pointer-events-auto opacity-0 translate-y-2">
           <div class="flex items-start justify-between gap-3">
             <div class="flex items-center gap-3 min-w-0">
@@ -170,12 +218,12 @@
               </button>
               <button id="btn-open-comments" class="px-2.5 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold flex items-center gap-1.5 shadow-md transition-all">
                 <i class="fa-solid fa-comment-dots"></i>
-                <span>작품설명 & 댓글</span>
+                <span>댓글 & 설명</span>
               </button>
             </div>
           </div>
 
-          <!-- How to operate preview snippet -->
+          <!-- Instructions Box -->
           <div id="art-info-instructions-box" class="mt-3 pt-2.5 border-t border-white/10 text-[11px] text-slate-300 flex items-start gap-2 hidden">
             <i class="fa-solid fa-gamepad text-indigo-400 mt-0.5 shrink-0"></i>
             <span id="art-info-instructions-text" class="line-clamp-2 leading-relaxed">작동법 내용</span>
@@ -183,56 +231,17 @@
         </div>
       </div>
 
-      <!-- COMMENTS & INSTRUCTIONS SIDE DRAWER -->
-      <div id="comments-drawer" class="absolute top-0 right-0 bottom-0 w-80 md:w-96 bg-white/95 backdrop-blur-xl border-l border-slate-200 shadow-2xl transition-transform duration-300 z-30 translate-x-full flex flex-col">
-        <!-- Drawer Header -->
-        <div class="p-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
-          <div class="flex items-center gap-2">
-            <i class="fa-solid fa-comments text-indigo-600 text-sm"></i>
-            <h3 class="font-bold text-xs text-slate-800">작품 설명 & 감상 댓글</h3>
-          </div>
-          <button id="btn-close-comments" class="w-7 h-7 rounded-lg bg-slate-200/60 hover:bg-slate-200 text-slate-500 flex items-center justify-center text-xs transition-all">
-            <i class="fa-solid fa-xmark"></i>
-          </button>
-        </div>
-
-        <!-- Instructions Box in Drawer -->
-        <div class="p-4 bg-indigo-50/60 border-b border-indigo-100">
-          <h4 class="text-[11px] font-bold text-indigo-700 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
-            <i class="fa-solid fa-circle-info"></i>작품 작동방법 및 사용 설명
-          </h4>
-          <p id="drawer-instructions-text" class="text-xs text-slate-700 leading-relaxed font-normal">
-            작동 설명이 등록되지 않은 작품입니다.
-          </p>
-        </div>
-
-        <!-- Comments List -->
-        <div id="comments-list-container" class="flex-1 overflow-y-auto p-4 space-y-3">
-          <p class="text-xs text-slate-400 text-center py-8">아직 등록된 댓글이 없습니다.<br>첫 감상평을 남겨보세요!</p>
-        </div>
-
-        <!-- Comment Input Form -->
-        <div class="p-4 border-t border-slate-200 bg-slate-50/80 space-y-2">
-          <div class="flex items-center gap-2">
-            <input type="text" id="comment-author-input" class="w-1/3 bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs text-slate-800 focus:outline-none focus:border-indigo-500" placeholder="이름 (예: 민수)">
-            <input type="text" id="comment-text-input" class="flex-1 bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs text-slate-800 focus:outline-none focus:border-indigo-500" placeholder="멋진 작품이네요! 어떤 원리인가요?">
-          </div>
-          <button id="btn-submit-comment" class="w-full py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-sm">
-            <i class="fa-solid fa-paper-plane text-xs"></i>댓글 등록하기
-          </button>
-        </div>
-      </div>
-
-      <!-- Mobile Menu Trigger -->
+      <!-- Mobile Menu Trigger Button -->
       <button id="btn-mobile-trigger" class="md:hidden absolute bottom-4 right-4 w-11 h-11 rounded-full bg-indigo-600 hover:bg-indigo-500 text-white flex items-center justify-center shadow-xl z-30 transition-transform">
-        <i class="fa-solid fa-bars"></i>
+        <i class="fa-solid fa-list-check"></i>
       </button>
     </main>
+
   </div>
 
-  <!-- STUDIO MODAL: Drop/Create/Share Artworks (3:7 ratio Split screen layout) -->
-  <div id="studio-modal" class="fixed inset-0 bg-slate-50/98 z-40 hidden flex flex-col">
-    <!-- Header with Go-Back Button -->
+  <!-- STUDIO MODAL: Drop & Upload HTML Media Art (3:7 ratio split) -->
+  <div id="studio-modal" class="fixed inset-0 bg-slate-50/98 z-40 hidden flex-col">
+    <!-- Header -->
     <header class="h-16 border-b border-slate-200 px-6 flex items-center justify-between shrink-0 bg-white">
       <div class="flex items-center gap-3">
         <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-white">
@@ -248,28 +257,28 @@
       </button>
     </header>
 
-    <!-- Studio Content Body (3:7 layout) -->
+    <!-- Studio Content Body -->
     <main class="flex-1 grid grid-cols-1 md:grid-cols-10 gap-6 p-6 overflow-hidden bg-slate-50">
       
-      <!-- LEFT 30% (3 columns): Form Controls -->
-      <section class="md:col-span-3 flex flex-col gap-4 overflow-y-auto pr-2">
+      <!-- LEFT 30%: Form Inputs -->
+      <section class="md:col-span-3 flex flex-col gap-4 overflow-y-auto pr-1">
         <div class="bg-white border border-slate-200 rounded-2xl p-4 space-y-4 shadow-sm">
           <h3 class="text-xs font-bold text-indigo-600 tracking-wider uppercase flex items-center gap-1.5">
             <i class="fa-solid fa-cloud-arrow-up"></i>파일 제출 가이드
           </h3>
 
-          <!-- Big Dropzone area -->
+          <!-- Dropzone -->
           <div id="studio-dropzone" class="border-2 border-dashed border-slate-300 hover:border-indigo-500 bg-slate-50/50 rounded-xl p-5 text-center cursor-pointer transition-all flex flex-col items-center justify-center group">
             <input type="file" id="studio-file-input" accept=".html" class="hidden">
             <div class="w-11 h-11 rounded-full bg-slate-100 group-hover:bg-indigo-50 group-hover:text-indigo-600 flex items-center justify-center text-slate-400 transition-colors mb-3">
               <i class="fa-solid fa-file-code text-lg"></i>
             </div>
             <p class="text-xs font-bold text-slate-700 mb-1">여기에 파일 떨어뜨리기</p>
-            <p class="text-[10px] text-slate-400">또는 마우스로 클릭해서 찾기</p>
+            <p class="text-[10px] text-slate-400">또는 클릭해서 컴퓨터에서 찾기</p>
             <p class="text-[9px] text-slate-500 mt-2 bg-slate-100 px-2 py-0.5 rounded-md font-medium">*.html 파일만 지원</p>
           </div>
 
-          <!-- Metadata form (Title, Creator, Instructions) -->
+          <!-- Metadata form -->
           <div class="space-y-3">
             <div>
               <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">작품 제목</label>
@@ -288,27 +297,24 @@
           </div>
         </div>
 
-        <!-- Submit & Cloud Save buttons -->
-        <div class="space-y-2">
-          <button id="btn-save-cloud" class="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/10 hover:shadow-indigo-600/20 transition-all duration-200 transform hover:-translate-y-0.5">
-            <i class="fa-solid fa-share-nodes"></i>실시간 학급 공용 전시판에 올리기
-          </button>
-        </div>
+        <button id="btn-save-cloud" class="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/10 hover:shadow-indigo-600/20 transition-all duration-200 transform hover:-translate-y-0.5">
+          <i class="fa-solid fa-share-nodes"></i>실시간 학급 공용 전시판에 올리기
+        </button>
 
         <div class="rounded-xl bg-white border border-slate-200 p-3 text-[10px] text-slate-500 leading-relaxed shadow-sm">
           <i class="fa-solid fa-circle-info text-indigo-500 mr-1"></i>
-          학급 공용 클라우드를 올바르게 연결했다면 다른 단말기에서도 공유가 즉시 동기화됩니다!
+          학급 공용 클라우드가 연동되어 있으면 모든 학생 기기에 즉시 동기화됩니다.
         </div>
       </section>
 
-      <!-- RIGHT 70% (7 columns): Preview Display Canvas -->
+      <!-- RIGHT 70%: Preview Canvas -->
       <section class="md:col-span-7 bg-white border border-slate-200 rounded-2xl overflow-hidden flex flex-col relative shadow-sm">
         <div class="h-10 px-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between shrink-0">
           <div class="flex items-center gap-2">
             <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
-            <span class="text-xs text-slate-600 font-semibold">실시간 결과물 검증 캔버스</span>
+            <span class="text-xs text-slate-600 font-semibold">실시간 검증 캔버스</span>
           </div>
-          <span class="text-[10px] text-slate-400 font-mono">live-canvas.html</span>
+          <span class="text-[10px] text-slate-400 font-mono">live-preview.html</span>
         </div>
         <div class="flex-1 w-full bg-black relative">
           <iframe id="studio-preview-iframe" class="w-full h-full border-none bg-black" sandbox="allow-scripts allow-same-origin allow-modals"></iframe>
@@ -323,7 +329,7 @@
     </main>
   </div>
 
-  <!-- DRAG OVERLAY: Full-screen dropzone visual aid -->
+  <!-- FULLSCREEN DRAG OVERLAY -->
   <div id="drag-overlay" class="fixed inset-0 bg-indigo-50/90 backdrop-blur-sm border-4 border-dashed border-indigo-400 flex flex-col items-center justify-center z-50 hidden pointer-events-none transition-all">
     <div class="w-16 h-16 rounded-full bg-indigo-600 flex items-center justify-center text-white mb-4 animate-bounce">
       <i class="fa-solid fa-cloud-arrow-up text-2xl"></i>
@@ -336,7 +342,7 @@
   <div id="toast-container" class="fixed top-5 left-1/2 -translate-x-1/2 z-50 flex flex-col gap-2 pointer-events-none"></div>
 
   <script>
-    /* Global Application State variables */
+    /* Global Application State */
     let playlist = [];
     let currentIndex = 0;
     let autoPlay = false; 
@@ -354,19 +360,12 @@
     // =========================================================================
     // [선생님 전용 초간단 자동 연동 설정 필드 ⭐]
     // =========================================================================
-    const HARDCODED_FIREBASE_CONFIG =  {
-  apiKey: "AIzaSyBtFCkd1B1R4_uHkuGsaOJwa6Iwc3Bs5FE",
-  authDomain: "interactive-44aca.firebaseapp.com",
-  projectId: "interactive-44aca",
-  storageBucket: "interactive-44aca.firebasestorage.app",
-  messagingSenderId: "751108708342",
-  appId: "1:751108708342:web:0c26ccc9a4df42a44119d7",
-  measurementId: "G-B0LE7C36M0"
-};
+    const HARDCODED_FIREBASE_CONFIG = null; 
 
     // DOM Elements Cache
     const sidebarPanel = document.getElementById('sidebar-panel');
     const playlistContainer = document.getElementById('playlist-container');
+    const playlistCountBadge = document.getElementById('playlist-count-badge');
     const artIframe = document.getElementById('art-iframe');
     const emptyState = document.getElementById('empty-state');
     const artInfoPanel = document.getElementById('art-info-panel');
@@ -376,10 +375,14 @@
     const artInfoInstructionsBox = document.getElementById('art-info-instructions-box');
     const artInfoInstructionsText = document.getElementById('art-info-instructions-text');
 
+    const tabBtnPlaylist = document.getElementById('tab-btn-playlist');
+    const tabBtnComments = document.getElementById('tab-btn-comments');
+    const viewPlaylist = document.getElementById('view-playlist');
+    const viewComments = document.getElementById('view-comments');
+    const badgeCommentsCount = document.getElementById('badge-comments-count');
+
     const btnLikeCurrent = document.getElementById('btn-like-current');
     const btnOpenComments = document.getElementById('btn-open-comments');
-    const btnCloseComments = document.getElementById('btn-close-comments');
-    const commentsDrawer = document.getElementById('comments-drawer');
     const commentsListContainer = document.getElementById('comments-list-container');
     const drawerInstructionsText = document.getElementById('drawer-instructions-text');
     const commentAuthorInput = document.getElementById('comment-author-input');
@@ -410,13 +413,13 @@
     const dragOverlay = document.getElementById('drag-overlay');
     const btnMobileTrigger = document.getElementById('btn-mobile-trigger');
 
-    /* Helper: Escape HTML strings safely for iframe srcdoc */
+    /* Helper: Escape HTML strings */
     function escapeHtml(str) {
       if (!str) return '';
       return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
     }
 
-    /* Helper: Show Floating Toast Alerts */
+    /* Helper: Floating Toast Alerts */
     function showToast(message, type = 'success') {
       const toast = document.createElement('div');
       toast.className = `px-4 py-2.5 rounded-xl text-xs font-bold shadow-2xl flex items-center gap-2 animate-bounce pointer-events-auto transition-all ${
@@ -440,43 +443,53 @@
       }, 3000);
     }
 
-    /* Set and Memorize Exhibition Mode State (Native Fullscreen Integration) */
+    /* Tab Switch Logic (Playlist vs Comments) */
+    function switchSidebarTab(tabName) {
+      if (tabName === 'playlist') {
+        tabBtnPlaylist.className = "px-3 py-1 rounded-lg bg-white text-indigo-600 shadow-sm transition-all font-bold";
+        tabBtnComments.className = "px-3 py-1 rounded-lg text-slate-500 hover:text-slate-800 transition-all font-semibold flex items-center gap-1";
+        viewPlaylist.classList.remove('hidden');
+        viewComments.classList.add('hidden');
+        viewComments.classList.remove('flex');
+      } else {
+        tabBtnComments.className = "px-3 py-1 rounded-lg bg-white text-indigo-600 shadow-sm transition-all font-bold flex items-center gap-1";
+        tabBtnPlaylist.className = "px-3 py-1 rounded-lg text-slate-500 hover:text-slate-800 transition-all font-semibold";
+        viewPlaylist.classList.add('hidden');
+        viewComments.classList.remove('hidden');
+        viewComments.classList.add('flex');
+      }
+    }
+
+    tabBtnPlaylist.onclick = () => switchSidebarTab('playlist');
+    tabBtnComments.onclick = () => switchSidebarTab('comments');
+
+    /* Projector Mode Toggle */
     function setProjectorMode(enable) {
       isProjectionMode = enable;
       localStorage.setItem('art_projector_mode', enable ? 'true' : 'false');
       if (enable) {
-        sidebarPanel.classList.add('-translate-x-full', 'absolute', 'hidden');
+        sidebarPanel.classList.add('hidden');
         btnExitProjector.classList.remove('hidden');
         btnExitProjector.classList.add('flex');
 
         try {
           if (document.documentElement.requestFullscreen) {
             document.documentElement.requestFullscreen();
-          } else if (document.documentElement.webkitRequestFullscreen) {
-            document.documentElement.webkitRequestFullscreen();
-          } else if (document.documentElement.msRequestFullscreen) {
-            document.documentElement.msRequestFullscreen();
           }
         } catch (err) {
-          console.warn("Fullscreen request skipped by sandboxed container limits", err);
+          console.warn("Fullscreen request skipped by container limits", err);
         }
       } else {
-        sidebarPanel.classList.remove('-translate-x-full', 'absolute', 'hidden');
+        sidebarPanel.classList.remove('hidden');
         btnExitProjector.classList.add('hidden');
         btnExitProjector.classList.remove('flex');
 
         try {
-          if (document.fullscreenElement) {
-            if (document.exitFullscreen) {
-              document.exitFullscreen();
-            } else if (document.webkitExitFullscreen) {
-              document.webkitExitFullscreen();
-            } else if (document.msExitFullscreen) {
-              document.msExitFullscreen();
-            }
+          if (document.fullscreenElement && document.exitFullscreen) {
+            document.exitFullscreen();
           }
         } catch (err) {
-          console.warn("Exit fullscreen failed or skipped", err);
+          console.warn("Exit fullscreen skipped", err);
         }
       }
     }
@@ -487,7 +500,7 @@
       }
     });
 
-    /* Initialize Firebase with Hardcoded Config Priority */
+    /* Initialize Firebase */
     function initFirebase() {
       let config = null;
 
@@ -498,7 +511,6 @@
         const savedConfig = localStorage.getItem('class_art_fb_config');
         if (savedConfig) {
           config = JSON.parse(savedConfig);
-          console.log("Using browser storage Firebase Configuration.");
         }
       }
 
@@ -518,14 +530,13 @@
           })
           .catch((error) => {
             console.error("Firebase Auth Error", error);
-            showToast("실시간 클라우드 로그인에 실패했습니다.", "error");
           });
       } catch (err) {
         console.error("Firebase Init Error", err);
       }
     }
 
-    /* Sync and fetch artifacts in real-time from Firestore */
+    /* Sync Cloud Artworks */
     function syncCloudArtworks() {
       if (!db) return;
 
@@ -552,7 +563,6 @@
         if (playlist.length > 0 && artIframe.src === "") {
           playArtwork(0);
         } else if (playlist[currentIndex]) {
-          // Update current likes count UI dynamically
           artInfoLikesCount.textContent = playlist[currentIndex].likes || 0;
         }
       }, (err) => {
@@ -560,7 +570,7 @@
       });
     }
 
-    /* Inline edit save triggered from playlist item edit button */
+    /* Inline Edit Handlers */
     function saveInlineEdit(item, event) {
       event.stopPropagation();
       const titleInput = document.getElementById(`edit-title-${item.id}`);
@@ -573,24 +583,19 @@
       const newCreator = creatorInput.value.trim() || "익명 작가";
       const newInstructions = instructionsInput ? instructionsInput.value.trim() : (item.instructions || "");
 
-      if (item.isCloud) {
-        if (!db) {
-          showToast("연결된 파이어베이스가 없습니다.", "error");
-          return;
-        }
-        showToast("클라우드 정보를 실시간 갱신하는 중...");
+      if (item.isCloud && db) {
+        showToast("클라우드 정보를 갱신 중...");
         db.collection("artifacts").doc(item.id).update({
           title: newTitle,
           creator: newCreator,
           instructions: newInstructions
         })
         .then(() => {
-          showToast("클라우드 작품 정보가 성공적으로 반영되었습니다!");
+          showToast("수정이 완료되었습니다!");
           editingId = null;
         })
         .catch(err => {
-          console.error("Cloud update failed", err);
-          showToast("수정 중 오류가 발생했습니다.", "error");
+          showToast("수정 실패", "error");
         });
       }
     }
@@ -607,10 +612,8 @@
       renderPlaylist();
     }
 
-    /* Delete Artwork with interactive 2-step click verification */
     function deleteArtwork(item, event, btnElement) {
       event.stopPropagation();
-      
       const isConfirmed = btnElement.getAttribute('data-confirm') === 'true';
       
       if (!isConfirmed) {
@@ -618,7 +621,7 @@
         btnElement.innerHTML = '<i class="fa-solid fa-circle-question text-rose-500 animate-pulse text-[11px]"></i>';
         btnElement.title = "한 번 더 누르면 삭제됩니다.";
         btnElement.className = "w-6 h-6 rounded-lg bg-rose-50 text-rose-500 flex items-center justify-center transition-all opacity-100";
-        showToast("실수를 막기 위해 한 번 더 누르시면 삭제됩니다.", "error");
+        showToast("한 번 더 누르시면 최종 삭제됩니다.", "error");
         
         setTimeout(() => {
           if (btnElement && btnElement.getAttribute('data-confirm') === 'true') {
@@ -629,29 +632,22 @@
           }
         }, 4000);
       } else {
-        if (item.isCloud) {
-          if (!db) {
-            showToast("연결된 파이어베이스가 없습니다.", "error");
-            return;
-          }
+        if (item.isCloud && db) {
           db.collection("artifacts").doc(item.id).delete()
-            .then(() => {
-              showToast("공용 클라우드에서 작품이 삭제되었습니다.");
-            })
-            .catch((err) => {
-              console.error("Cloud delete error", err);
-              showToast("클라우드 삭제 중 오류가 발생했습니다.", "error");
-            });
+            .then(() => showToast("작품이 삭제되었습니다."))
+            .catch(() => showToast("삭제 오류가 발생했습니다.", "error"));
         }
       }
     }
 
-    /* Render list of Artworks in the sidebar */
+    /* Render Playlist with Thumbnails on the Right Panel */
     function renderPlaylist() {
       playlistContainer.innerHTML = "";
+      playlistCountBadge.textContent = `${playlist.length}개 작품`;
+
       if (playlist.length === 0) {
         playlistContainer.innerHTML = `
-          <div class="p-4 text-center rounded-xl bg-slate-50 border border-slate-200 text-slate-400 text-[11px]">
+          <div class="p-6 text-center rounded-2xl bg-slate-50 border border-slate-200 text-slate-400 text-xs">
             등록된 작품이 아직 없습니다.
           </div>
         `;
@@ -667,18 +663,18 @@
         const isCurrent = index === currentIndex;
 
         if (editingId === item.id) {
-          div.className = "w-full p-3 rounded-xl bg-indigo-50/50 border border-indigo-200 text-slate-700 flex flex-col gap-2 shadow-sm";
+          div.className = "w-full p-3 rounded-2xl bg-indigo-50/70 border border-indigo-200 text-slate-700 flex flex-col gap-2 shadow-sm";
           div.innerHTML = `
             <div class="space-y-1.5 w-full">
-              <input type="text" id="edit-title-${item.id}" class="w-full bg-white border border-slate-200 rounded px-2 py-1 text-xs text-slate-800 font-bold focus:outline-none focus:border-indigo-500" value="${escapeHtml(item.title)}" placeholder="작품명">
-              <input type="text" id="edit-creator-${item.id}" class="w-full bg-white border border-slate-200 rounded px-2 py-1 text-xs text-slate-600 focus:outline-none focus:border-indigo-500" value="${escapeHtml(item.creator)}" placeholder="작가 이름">
-              <input type="text" id="edit-instructions-${item.id}" class="w-full bg-white border border-slate-200 rounded px-2 py-1 text-xs text-slate-600 focus:outline-none focus:border-indigo-500" value="${escapeHtml(item.instructions || '')}" placeholder="작동방법 설명">
+              <input type="text" id="edit-title-${item.id}" class="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1 text-xs text-slate-800 font-bold focus:outline-none focus:border-indigo-500" value="${escapeHtml(item.title)}" placeholder="작품명">
+              <input type="text" id="edit-creator-${item.id}" class="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1 text-xs text-slate-600 focus:outline-none focus:border-indigo-500" value="${escapeHtml(item.creator)}" placeholder="작가 이름">
+              <input type="text" id="edit-instructions-${item.id}" class="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1 text-xs text-slate-600 focus:outline-none focus:border-indigo-500" value="${escapeHtml(item.instructions || '')}" placeholder="작동방법 설명">
             </div>
             <div class="flex items-center justify-end gap-1.5 mt-1 w-full">
-              <button id="btn-save-edit-${item.id}" class="px-2 py-1 rounded bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-[10px] flex items-center gap-1 transition-colors">
+              <button id="btn-save-edit-${item.id}" class="px-2.5 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-[10px] flex items-center gap-1 transition-colors">
                 <i class="fa-solid fa-check"></i> 저장
               </button>
-              <button id="btn-cancel-edit-${item.id}" class="px-2 py-1 rounded bg-slate-200 hover:bg-slate-300 text-slate-600 font-bold text-[10px] flex items-center gap-1 transition-colors">
+              <button id="btn-cancel-edit-${item.id}" class="px-2.5 py-1 rounded-lg bg-slate-200 hover:bg-slate-300 text-slate-600 font-bold text-[10px] flex items-center gap-1 transition-colors">
                 <i class="fa-solid fa-xmark"></i> 취소
               </button>
             </div>
@@ -690,67 +686,77 @@
           document.getElementById(`btn-cancel-edit-${item.id}`).onclick = (e) => cancelInlineEdit(e);
 
         } else {
-          div.className = `w-full p-2.5 rounded-xl flex items-center justify-between transition-all border group ${
+          div.className = `w-full p-2.5 rounded-2xl flex flex-col gap-2 transition-all border group ${
             isCurrent 
-              ? 'bg-indigo-50/90 border-indigo-200 text-indigo-700 shadow-sm' 
-              : 'bg-slate-50 border-transparent text-slate-600 hover:bg-slate-100/80 hover:text-slate-800'
+              ? 'bg-indigo-50/90 border-indigo-200 text-indigo-900 shadow-md ring-1 ring-indigo-300' 
+              : 'bg-white border-slate-200/80 text-slate-700 hover:border-indigo-200 hover:shadow-sm'
           }`;
 
-          // Live Miniature Thumbnail Preview Container
-          const thumbBox = document.createElement('div');
-          thumbBox.className = 'thumb-iframe-container border border-slate-200 shadow-inner group-hover:border-indigo-300 transition-colors cursor-pointer mr-2.5';
-          thumbBox.onclick = () => playArtwork(index);
-          thumbBox.innerHTML = `<iframe srcdoc="${escapeHtml(item.code)}" class="thumb-iframe" tabindex="-1" loading="lazy"></iframe>`;
+          // Item Top Row: Thumbnail + Info
+          const topRow = document.createElement('div');
+          topRow.className = "flex items-center gap-3 cursor-pointer";
+          topRow.onclick = () => playArtwork(index);
 
-          // Info Area (Title & Creator)
-          const infoArea = document.createElement('div');
-          infoArea.className = 'min-w-0 flex-1 cursor-pointer pr-1';
-          infoArea.onclick = () => playArtwork(index);
-          infoArea.innerHTML = `
-            <div class="flex items-center gap-1">
-              <h4 class="font-bold text-xs truncate ${isCurrent ? 'text-indigo-600' : 'text-slate-700'}">${escapeHtml(item.title)}</h4>
+          topRow.innerHTML = `
+            <div class="thumb-iframe-container border border-slate-200 shadow-inner group-hover:border-indigo-400 transition-colors shrink-0">
+              <iframe srcdoc="${escapeHtml(item.code)}" class="thumb-iframe" tabindex="-1" loading="lazy"></iframe>
             </div>
-            <p class="text-[10px] text-slate-400 truncate mt-0.5">${escapeHtml(item.creator)}</p>
-            <div class="flex items-center gap-2 mt-1 text-[9px] text-slate-400">
-              <span class="flex items-center gap-0.5 text-rose-500 font-medium"><i class="fa-solid fa-heart text-[8px]"></i> ${item.likes || 0}</span>
-              ${item.instructions ? '<span class="text-indigo-500 font-medium"><i class="fa-solid fa-gamepad text-[8px]"></i> 가이드 있음</span>' : ''}
+            <div class="min-w-0 flex-1">
+              <h4 class="font-bold text-xs truncate ${isCurrent ? 'text-indigo-700 font-extrabold' : 'text-slate-800'}">${escapeHtml(item.title)}</h4>
+              <p class="text-[11px] text-slate-500 truncate mt-0.5">🧑‍🎨 ${escapeHtml(item.creator)}</p>
+              ${item.instructions ? `<p class="text-[10px] text-indigo-600 line-clamp-1 mt-1 font-medium"><i class="fa-solid fa-gamepad text-[9px] mr-1"></i>${escapeHtml(item.instructions)}</p>` : ''}
             </div>
           `;
 
-          // Control Area
-          const ctrlArea = document.createElement('div');
-          ctrlArea.className = 'flex items-center gap-1 shrink-0';
+          // Item Bottom Row: Like ❤️ + Comment 💬 + Edit/Delete Controls
+          const bottomRow = document.createElement('div');
+          bottomRow.className = "flex items-center justify-between pt-2 border-t border-slate-100 text-xs";
 
-          const editBtn = document.createElement('button');
-          editBtn.className = 'w-6 h-6 rounded-lg bg-slate-100 hover:bg-indigo-50 text-slate-400 hover:text-indigo-600 flex items-center justify-center transition-all opacity-0 group-hover:opacity-100';
-          editBtn.innerHTML = '<i class="fa-solid fa-pen text-[10px]"></i>';
-          editBtn.title = "수정";
-          editBtn.onclick = (e) => enableInlineEdit(item, e);
+          // Action buttons
+          bottomRow.innerHTML = `
+            <div class="flex items-center gap-2">
+              <button id="btn-like-item-${item.id}" class="px-2 py-1 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-600 font-bold text-[10px] flex items-center gap-1 transition-all">
+                <i class="fa-solid fa-heart text-rose-500"></i> ${item.likes || 0}
+              </button>
+              <button id="btn-comment-item-${item.id}" class="px-2 py-1 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-600 font-bold text-[10px] flex items-center gap-1 transition-all">
+                <i class="fa-solid fa-comment-dots text-indigo-500"></i> 댓글
+              </button>
+            </div>
+            <div class="flex items-center gap-1">
+              <button id="btn-edit-item-${item.id}" class="w-6 h-6 rounded-lg bg-slate-100 hover:bg-indigo-50 text-slate-400 hover:text-indigo-600 flex items-center justify-center transition-all opacity-0 group-hover:opacity-100" title="수정">
+                <i class="fa-solid fa-pen text-[10px]"></i>
+              </button>
+              <button id="btn-del-item-${item.id}" class="w-6 h-6 rounded-lg bg-slate-100 hover:bg-rose-50 text-slate-400 hover:text-rose-500 flex items-center justify-center transition-all opacity-0 group-hover:opacity-100" title="삭제" data-confirm="false">
+                <i class="fa-solid fa-trash-can text-[10px]"></i>
+              </button>
+            </div>
+          `;
 
-          const delBtn = document.createElement('button');
-          delBtn.className = 'w-6 h-6 rounded-lg bg-slate-100 hover:bg-rose-50 text-slate-400 hover:text-rose-500 flex items-center justify-center transition-all opacity-0 group-hover:opacity-100';
-          delBtn.innerHTML = '<i class="fa-solid fa-trash-can text-[10px]"></i>';
-          delBtn.title = "작품 삭제";
-          delBtn.setAttribute('data-confirm', 'false');
-          delBtn.onclick = (e) => deleteArtwork(item, e, delBtn);
-
-          ctrlArea.appendChild(editBtn);
-          ctrlArea.appendChild(delBtn);
-
-          div.appendChild(thumbBox);
-          div.appendChild(infoArea);
-          div.appendChild(ctrlArea);
+          div.appendChild(topRow);
+          div.appendChild(bottomRow);
 
           playlistContainer.appendChild(div);
+
+          // Event bindings
+          document.getElementById(`btn-like-item-${item.id}`).onclick = (e) => {
+            e.stopPropagation();
+            likeArtwork(item);
+          };
+          document.getElementById(`btn-comment-item-${item.id}`).onclick = (e) => {
+            e.stopPropagation();
+            playArtwork(index);
+            switchSidebarTab('comments');
+          };
+          document.getElementById(`btn-edit-item-${item.id}`).onclick = (e) => enableInlineEdit(item, e);
+          const delBtn = document.getElementById(`btn-del-item-${item.id}`);
+          delBtn.onclick = (e) => deleteArtwork(item, e, delBtn);
         }
       });
     }
 
-    /* Show and automatically hide floating info panel card */
+    /* Show floating artwork info panel */
     function showInfoPanel(item) {
-      if (infoPanelTimeout) {
-        clearTimeout(infoPanelTimeout);
-      }
+      if (infoPanelTimeout) clearTimeout(infoPanelTimeout);
 
       artInfoTitle.textContent = item.title;
       artInfoCreator.textContent = `🧑‍🎨 ${item.creator}`;
@@ -772,11 +778,8 @@
       }, 5000);
     }
 
-    /* Like current artwork */
-    function likeCurrentArtwork() {
-      if (playlist.length === 0 || !playlist[currentIndex]) return;
-      const item = playlist[currentIndex];
-
+    /* Like specific artwork */
+    function likeArtwork(item) {
       item.likes = (item.likes || 0) + 1;
       artInfoLikesCount.textContent = item.likes;
       renderPlaylist();
@@ -784,36 +787,19 @@
       if (item.isCloud && db) {
         db.collection("artifacts").doc(item.id).update({
           likes: firebase.firestore.FieldValue.increment(1)
-        }).then(() => {
-          showToast("작품에 좋아요 ❤️를 보냈습니다!");
-        }).catch(err => {
-          console.error("Like error", err);
-        });
+        }).then(() => showToast("좋아요 ❤️를 보냈습니다!"))
+        .catch(err => console.error("Like error", err));
       } else {
         showToast("좋아요 ❤️를 남겼습니다!");
       }
     }
 
-    /* Open Comments & Instructions Drawer */
-    function openCommentsDrawer() {
+    function likeCurrentArtwork() {
       if (playlist.length === 0 || !playlist[currentIndex]) return;
-      const item = playlist[currentIndex];
-
-      drawerInstructionsText.textContent = (item.instructions && item.instructions.trim()) ? item.instructions : "등록된 작동 설명이 없습니다.";
-      commentsDrawer.classList.remove('translate-x-full');
-
-      listenToComments(item.id);
+      likeArtwork(playlist[currentIndex]);
     }
 
-    function closeCommentsDrawer() {
-      commentsDrawer.classList.add('translate-x-full');
-      if (commentsUnsubscribe) {
-        commentsUnsubscribe();
-        commentsUnsubscribe = null;
-      }
-    }
-
-    /* Listen to real-time comments for active artwork */
+    /* Listen to Comments for active artwork */
     function listenToComments(artifactId) {
       if (commentsUnsubscribe) {
         commentsUnsubscribe();
@@ -821,7 +807,8 @@
       }
 
       if (!db) {
-        commentsListContainer.innerHTML = '<p class="text-xs text-slate-400 text-center py-6">클라우드 연결 상태에서 실시간 댓글을 작성하실 수 있습니다.</p>';
+        commentsListContainer.innerHTML = '<p class="text-xs text-slate-400 text-center py-6">실시간 클라우드가 연결되어야 댓글을 이용할 수 있습니다.</p>';
+        badgeCommentsCount.textContent = '0';
         return;
       }
 
@@ -829,6 +816,8 @@
         .orderBy("timestamp", "asc")
         .onSnapshot((snapshot) => {
           commentsListContainer.innerHTML = "";
+          badgeCommentsCount.textContent = snapshot.size || 0;
+
           if (snapshot.empty) {
             commentsListContainer.innerHTML = '<p class="text-xs text-slate-400 text-center py-8">아직 등록된 댓글이 없습니다.<br>첫 감상평을 남겨보세요!</p>';
             return;
@@ -837,7 +826,7 @@
           snapshot.forEach((doc) => {
             const data = doc.data();
             const commentItem = document.createElement('div');
-            commentItem.className = "bg-slate-50 border border-slate-200/80 rounded-xl p-3 space-y-1 shadow-sm";
+            commentItem.className = "bg-white border border-slate-200/80 rounded-xl p-3 space-y-1 shadow-sm";
             commentItem.innerHTML = `
               <div class="flex items-center justify-between">
                 <span class="text-xs font-bold text-indigo-600 flex items-center gap-1">
@@ -853,12 +842,10 @@
           });
 
           commentsListContainer.scrollTop = commentsListContainer.scrollHeight;
-        }, err => {
-          console.error("Comments fetch error", err);
-        });
+        }, err => console.error("Comments error", err));
     }
 
-    /* Submit new comment */
+    /* Submit Comment */
     function submitComment() {
       if (playlist.length === 0 || !playlist[currentIndex]) return;
       const item = playlist[currentIndex];
@@ -872,7 +859,7 @@
       }
 
       if (!db) {
-        showToast("실시간 클라우드가 연결되어야 댓글 작성이 가능합니다.", "error");
+        showToast("클라우드 연결이 완료되어야 댓글 등록이 가능합니다.", "error");
         return;
       }
 
@@ -889,7 +876,7 @@
       });
     }
 
-    /* Start execution of selected Artwork inside iframe */
+    /* Start execution of selected Artwork inside main iframe */
     function playArtwork(index) {
       if (playlist.length === 0) return;
       
@@ -903,10 +890,8 @@
       
       showInfoPanel(item);
 
-      if (!commentsDrawer.classList.contains('translate-x-full')) {
-        drawerInstructionsText.textContent = (item.instructions && item.instructions.trim()) ? item.instructions : "등록된 작동 설명이 없습니다.";
-        listenToComments(item.id);
-      }
+      drawerInstructionsText.textContent = (item.instructions && item.instructions.trim()) ? item.instructions : "등록된 작동 설명이 없습니다.";
+      listenToComments(item.id);
 
       artIframe.style.opacity = "0.2";
       
@@ -922,7 +907,7 @@
         artIframe.onload = () => {
           artIframe.style.opacity = "1";
         };
-      }, 250);
+      }, 200);
 
       if (autoPlay) {
         resetTimer();
@@ -955,12 +940,12 @@
       autoPlay = !autoPlay;
       if (autoPlay) {
         playPauseIcon.className = "fa-solid fa-pause text-sm";
-        btnPlayPause.className = "w-10 h-10 rounded-lg bg-indigo-600 hover:bg-indigo-500 flex items-center justify-center transition-all text-white shadow-md shadow-indigo-600/10";
+        btnPlayPause.className = "w-9 h-9 rounded-lg bg-indigo-600 hover:bg-indigo-500 flex items-center justify-center transition-all text-white shadow-md shadow-indigo-600/10";
         resetTimer();
-        showToast("자동 상영 재생 시작");
+        showToast("자동 상영 시작");
       } else {
         playPauseIcon.className = "fa-solid fa-play text-sm";
-        btnPlayPause.className = "w-10 h-10 rounded-lg bg-slate-100 hover:bg-slate-200 flex items-center justify-center transition-all text-slate-600";
+        btnPlayPause.className = "w-9 h-9 rounded-lg bg-slate-100 hover:bg-slate-200 flex items-center justify-center transition-all text-slate-600";
         clearInterval(timerInterval);
         showToast("자동 상영 일시 중지");
       }
@@ -1000,9 +985,7 @@
     }
 
     function bindDragAndDrop(element, onLoaded) {
-      element.ondragover = (e) => {
-        e.preventDefault();
-      };
+      element.ondragover = (e) => e.preventDefault();
       element.ondrop = (e) => {
         e.preventDefault();
         const files = e.dataTransfer.files;
@@ -1024,9 +1007,7 @@
       e.preventDefault();
       dragOverlay.classList.add('hidden');
     };
-    window.ondragover = (e) => {
-      e.preventDefault();
-    };
+    window.ondragover = (e) => e.preventDefault();
     window.ondrop = (e) => {
       e.preventDefault();
       dragOverlay.classList.add('hidden');
@@ -1034,10 +1015,9 @@
       if (files.length > 0 && files[0].name.endsWith('.html')) {
         loadFileText(files[0], (content) => {
           enterStudio();
-          const autoTitle = files[0].name.replace('.html', '');
-          studioTitleInput.value = autoTitle;
+          studioTitleInput.value = files[0].name.replace('.html', '');
           updateStudioPreview(content);
-          showToast("파일이 스튜디오에 준비되었습니다!");
+          showToast("스튜디오에 업로드 준비가 되었습니다!");
         });
       }
     };
@@ -1071,7 +1051,7 @@
       }
 
       if (!db) {
-        showToast("실시간 클라우드가 연결되지 않았습니다. 파이어베이스 설정을 확인해주세요.", "error");
+        showToast("실시간 클라우드가 연결되지 않았습니다.", "error");
         return;
       }
 
@@ -1094,8 +1074,7 @@
     };
 
     btnLikeCurrent.onclick = likeCurrentArtwork;
-    btnOpenComments.onclick = openCommentsDrawer;
-    btnCloseComments.onclick = closeCommentsDrawer;
+    btnOpenComments.onclick = () => switchSidebarTab('comments');
     btnSubmitComment.onclick = submitComment;
 
     btnPlayPause.onclick = togglePlayPause;
@@ -1113,7 +1092,7 @@
     btnCloseStudio.onclick = leaveStudio;
 
     btnMobileTrigger.onclick = () => {
-      sidebarPanel.classList.toggle('-translate-x-full');
+      sidebarPanel.classList.toggle('hidden');
     };
 
     function cleanStrayTextNodes() {
@@ -1145,10 +1124,6 @@
       } else {
         setProjectorMode(false);
       }
-
-      const localSaved = localStorage.getItem('class_art_local_playlist');
-      let localList = localSaved ? JSON.parse(localSaved) : [];
-      playlist = [...localList];
 
       initFirebase();
 
